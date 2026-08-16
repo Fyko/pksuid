@@ -1,14 +1,14 @@
 import { test } from "uvu";
 import * as assert from "uvu/assert";
 import { KSUID } from "../../src/ksuid.ts";
-import { Buffer } from "buffer";
+import { Buffer } from "node:buffer";
 
-const EPOCH = 1400000000;
+const EPOCH = 1_400_000_000;
 
 test("KSUID.random()", () => {
   const ksuid = KSUID.random();
   assert.instance(ksuid, KSUID);
-  const now = Math.floor(Date.now() / 1000);
+  const now = Math.floor(Date.now() / 1_000);
   const timestamp = ksuid.timestamp;
   assert.ok(timestamp + EPOCH <= now);
   assert.ok(now - (timestamp + EPOCH) < 5);
@@ -18,12 +18,9 @@ test("KSUID.parse() with valid ksuid", () => {
   const ksuidString = "0o5sKzFDBc56T8mbUP8wH1KpSX7";
   const ksuid = KSUID.parse(ksuidString);
   assert.is(ksuid.toString(), ksuidString);
-  assert.is(ksuid.timestamp, 95004740);
+  assert.is(ksuid.timestamp, 95_004_740);
 
-  const expectedPayload = Buffer.from(
-    "669f7efd7b6fe812278486085878563d",
-    "hex"
-  );
+  const expectedPayload = Buffer.from("669f7efd7b6fe812278486085878563d", "hex");
 
   assert.is(expectedPayload.length, 16);
   assert.ok(ksuid.payload.equals(expectedPayload));
@@ -36,7 +33,7 @@ test("KSUID.parse() with invalid ksuid", () => {
 });
 
 test("KSUID.fromParts()", () => {
-  const timestamp = 95004740;
+  const timestamp = 95_004_740;
   const payload = Buffer.from("669f7efd7b6fe812278486085878563d", "hex");
   assert.is(payload.length, 16);
   const ksuid = KSUID.fromParts(timestamp, payload);
@@ -44,7 +41,7 @@ test("KSUID.fromParts()", () => {
 });
 
 test("KSUID.fromParts() with invalid parts", () => {
-  const timestamp = 107608047;
+  const timestamp = 107_608_047;
   const payload = Buffer.from("short", "hex");
   assert.throws(() => KSUID.fromParts(timestamp, payload));
 });

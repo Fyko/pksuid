@@ -1,7 +1,7 @@
 import { test } from "uvu";
 import * as assert from "uvu/assert";
 import { KSUID } from "../../src/ksuid.ts";
-import { Buffer } from "buffer";
+import { Buffer } from "node:buffer";
 
 test("KSUID.parseOrNil with valid KSUID", () => {
   const validKsuid = "0o5sKzFDBc56T8mbUP8wH1KpSX7";
@@ -23,10 +23,7 @@ test("KSUID.parseOrNil with invalid KSUID returns nil", () => {
 
   for (const invalid of invalidInputs) {
     const result = KSUID.parseOrNil(invalid);
-    assert.ok(
-      result.isNil(),
-      `Expected nil for input: "${invalid}", got: ${result.toString()}`
-    );
+    assert.ok(result.isNil(), `Expected nil for input: "${invalid}", got: ${result.toString()}`);
   }
 });
 
@@ -54,7 +51,7 @@ test("KSUID.fromBytesOrNil with invalid buffer returns nil", () => {
 });
 
 test("KSUID.fromPartsOrNil with valid parts", () => {
-  const timestamp = 95004740;
+  const timestamp = 95_004_740;
   const payload = Buffer.from("669f7efd7b6fe812278486085878563d", "hex");
 
   const result = KSUID.fromPartsOrNil(timestamp, payload);
@@ -64,7 +61,7 @@ test("KSUID.fromPartsOrNil with valid parts", () => {
 });
 
 test("KSUID.fromPartsOrNil with invalid payload returns nil", () => {
-  const timestamp = 95004740;
+  const timestamp = 95_004_740;
   const invalidPayloads = [
     Buffer.alloc(15), // Too short
     Buffer.alloc(17), // Too long
@@ -79,24 +76,15 @@ test("KSUID.fromPartsOrNil with invalid payload returns nil", () => {
 });
 
 test("KSUID.fromBytes error message matches Go", () => {
-  assert.throws(
-    () => KSUID.fromBytes(Buffer.alloc(19)),
-    "Valid KSUIDs are 20 bytes"
-  );
+  assert.throws(() => KSUID.fromBytes(Buffer.alloc(19)), "Valid KSUIDs are 20 bytes");
 });
 
 test("KSUID.parse error message matches Go", () => {
-  assert.throws(
-    () => KSUID.parse("invalid"),
-    "Valid encoded KSUIDs are 27 characters"
-  );
+  assert.throws(() => KSUID.parse("invalid"), "Valid encoded KSUIDs are 27 characters");
 });
 
 test("KSUID.fromParts error message matches Go", () => {
-  assert.throws(
-    () => KSUID.fromParts(123, Buffer.alloc(15)),
-    "Valid KSUID payloads are 16 bytes"
-  );
+  assert.throws(() => KSUID.fromParts(123, Buffer.alloc(15)), "Valid KSUID payloads are 16 bytes");
 });
 
 test("KSUID.fromBytes with exact 20 bytes works", () => {
@@ -116,7 +104,7 @@ test("KSUID.fromBytes round trip", () => {
 });
 
 test("OrNil methods preserve original behavior on success", () => {
-  const timestamp = 95004740;
+  const timestamp = 95_004_740;
   const payload = Buffer.from("669f7efd7b6fe812278486085878563d", "hex");
   const validString = "0o5sKzFDBc56T8mbUP8wH1KpSX7";
 

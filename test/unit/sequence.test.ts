@@ -2,7 +2,7 @@ import { test } from "uvu";
 import * as assert from "uvu/assert";
 import { Sequence } from "../../src/sequence.ts";
 import { KSUID } from "../../src/ksuid.ts";
-import { Buffer } from "buffer";
+import { Buffer } from "node:buffer";
 
 test("Sequence basic functionality", () => {
   const seed = KSUID.random();
@@ -32,14 +32,14 @@ test("Sequence exhaustion", () => {
   // Generate maximum number of IDs (65536)
   let count = 0;
   let id = seq.next();
-  while (id !== null && count < 70000) {
+  while (id !== null && count < 70_000) {
     // Safety limit to prevent infinite loop
     id = seq.next();
     count++;
   }
 
   // Should have generated exactly 65536 + 1 (the last call returns null)
-  assert.is(count, 65536);
+  assert.is(count, 65_536);
   assert.is(id, null);
   assert.ok(seq.isExhausted());
 });
@@ -105,7 +105,7 @@ test("Sequence reset functionality", () => {
 
 test("Sequence with deterministic seed", () => {
   // Create a deterministic seed for reproducible tests
-  const timestamp = 95004740;
+  const timestamp = 95_004_740;
   const payload = Buffer.from("669f7efd7b6fe812278486085878563d", "hex");
   const seed = KSUID.fromParts(timestamp, payload);
 
@@ -132,10 +132,7 @@ test("Sequence with deterministic seed", () => {
   assert.ok(firstPayload.subarray(0, 14).equals(secondPayload.subarray(0, 14)));
 
   // Last 2 bytes should be different (sequence numbers 0 and 1)
-  assert.not.equal(
-    firstPayload.readUInt16BE(14),
-    secondPayload.readUInt16BE(14)
-  );
+  assert.not.equal(firstPayload.readUInt16BE(14), secondPayload.readUInt16BE(14));
   assert.is(firstPayload.readUInt16BE(14), 0); // First sequence number
   assert.is(secondPayload.readUInt16BE(14), 1); // Second sequence number
 });
@@ -157,7 +154,7 @@ test("Sequence ordering maintains lexicographic order", () => {
 
   // String representations should also be in order
   const strings = ids.map(id => id.toString());
-  const sorted = [...strings].sort();
+  const sorted = [...strings].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
   assert.equal(strings, sorted);
 });
 

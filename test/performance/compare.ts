@@ -6,9 +6,10 @@
  * Runs benchmarks for both implementations and provides detailed comparison.
  */
 
-import { execSync } from "child_process";
-import { writeFileSync, readFileSync, existsSync } from "fs";
-import { join } from "path";
+import { execSync } from "node:child_process";
+import { writeFileSync, readFileSync, existsSync } from "node:fs";
+import { join } from "node:path";
+import process from "node:process";
 
 interface BenchmarkResult {
   operation: string;
@@ -32,7 +33,7 @@ interface ComparisonResult {
 class PerformanceComparison {
   private results: ComparisonResult[] = [];
 
-  async runComparison(): Promise<void> {
+  public async runComparison(): Promise<void> {
     console.log("🔥 Running Go vs TypeScript Performance Comparison\n");
 
     // Check if Go is installed
@@ -127,10 +128,7 @@ class PerformanceComparison {
     this.exportComparison();
   }
 
-  private compareResults(
-    goResults: BenchmarkResult[],
-    tsResults: BenchmarkResult[]
-  ): void {
+  private compareResults(goResults: BenchmarkResult[], tsResults: BenchmarkResult[]): void {
     // Create operation mapping
     const operationMap: { [key: string]: string } = {
       "Random Generation": "Random Generation",
@@ -162,8 +160,8 @@ class PerformanceComparison {
           tsOpsPerSec: tsResult.opsPerSecond,
           goFaster,
           speedRatio,
-          goMemoryMB: goResult.memoryUsageMB || 0,
-          tsMemoryMB: tsResult.memoryUsageMB || 0,
+          goMemoryMB: goResult.memoryUsageMB ?? 0,
+          tsMemoryMB: tsResult.memoryUsageMB ?? 0,
         });
       }
     }
@@ -216,91 +214,58 @@ class PerformanceComparison {
     const goWins = this.results.filter(r => r.goFaster).length;
     const tsWins = this.results.length - goWins;
     const avgGoAdvantage =
-      this.results
-        .filter(r => r.goFaster)
-        .reduce((sum, r) => sum + r.speedRatio, 0) / Math.max(goWins, 1);
+      this.results.filter(r => r.goFaster).reduce((sum, r) => sum + r.speedRatio, 0) / Math.max(goWins, 1);
     const avgTsAdvantage =
-      this.results
-        .filter(r => !r.goFaster)
-        .reduce((sum, r) => sum + r.speedRatio, 0) / Math.max(tsWins, 1);
+      this.results.filter(r => !r.goFaster).reduce((sum, r) => sum + r.speedRatio, 0) / Math.max(tsWins, 1);
 
     console.log("\n📈 Performance Summary:");
     console.log(`🟢 Go wins: ${goWins}/${this.results.length} operations`);
-    console.log(
-      `🔵 TypeScript wins: ${tsWins}/${this.results.length} operations`
-    );
+    console.log(`🔵 TypeScript wins: ${tsWins}/${this.results.length} operations`);
 
     if (goWins > 0) {
-      console.log(
-        `🟢 Average Go advantage: ${avgGoAdvantage.toFixed(2)}x faster`
-      );
+      console.log(`🟢 Average Go advantage: ${avgGoAdvantage.toFixed(2)}x faster`);
     }
 
     if (tsWins > 0) {
-      console.log(
-        `🔵 Average TypeScript advantage: ${avgTsAdvantage.toFixed(2)}x faster`
-      );
+      console.log(`🔵 Average TypeScript advantage: ${avgTsAdvantage.toFixed(2)}x faster`);
     }
 
     // Highlight key operations
-    const generation = this.results.find(
-      r => r.operation === "Random Generation"
-    );
+    const generation = this.results.find(r => r.operation === "Random Generation");
     const parsing = this.results.find(r => r.operation === "String Parsing");
-    const sorting = this.results.find(
-      r => r.operation === "Sorting (1K items)"
-    );
+    const sorting = this.results.find(r => r.operation === "Sorting (1K items)");
 
     if (generation) {
       console.log(`\n🎯 KSUID Generation:`);
-      console.log(
-        `   Go: ${this.formatNumber(generation.goOpsPerSec)} ops/sec`
-      );
-      console.log(
-        `   TypeScript: ${this.formatNumber(generation.tsOpsPerSec)} ops/sec`
-      );
-      console.log(
-        `   ${generation.goFaster ? "Go" : "TypeScript"} is ${generation.speedRatio.toFixed(2)}x faster`
-      );
+      console.log(`   Go: ${this.formatNumber(generation.goOpsPerSec)} ops/sec`);
+      console.log(`   TypeScript: ${this.formatNumber(generation.tsOpsPerSec)} ops/sec`);
+      console.log(`   ${generation.goFaster ? "Go" : "TypeScript"} is ${generation.speedRatio.toFixed(2)}x faster`);
     }
 
     if (parsing) {
       console.log(`\n🎯 KSUID Parsing:`);
       console.log(`   Go: ${this.formatNumber(parsing.goOpsPerSec)} ops/sec`);
-      console.log(
-        `   TypeScript: ${this.formatNumber(parsing.tsOpsPerSec)} ops/sec`
-      );
-      console.log(
-        `   ${parsing.goFaster ? "Go" : "TypeScript"} is ${parsing.speedRatio.toFixed(2)}x faster`
-      );
+      console.log(`   TypeScript: ${this.formatNumber(parsing.tsOpsPerSec)} ops/sec`);
+      console.log(`   ${parsing.goFaster ? "Go" : "TypeScript"} is ${parsing.speedRatio.toFixed(2)}x faster`);
     }
 
     if (sorting) {
-      const goSortItems = sorting.goOpsPerSec * 1000;
-      const tsSortItems = sorting.tsOpsPerSec * 1000;
+      const goSortItems = sorting.goOpsPerSec * 1_000;
+      const tsSortItems = sorting.tsOpsPerSec * 1_000;
       console.log(`\n🎯 Sorting Performance:`);
       console.log(`   Go: ${this.formatNumber(goSortItems)} items/sec`);
       console.log(`   TypeScript: ${this.formatNumber(tsSortItems)} items/sec`);
-      console.log(
-        `   ${sorting.goFaster ? "Go" : "TypeScript"} is ${sorting.speedRatio.toFixed(2)}x faster`
-      );
+      console.log(`   ${sorting.goFaster ? "Go" : "TypeScript"} is ${sorting.speedRatio.toFixed(2)}x faster`);
     }
 
     console.log("\n🏆 Overall Assessment:");
 
     if (goWins > tsWins) {
       const overallAdvantage =
-        this.results.reduce(
-          (sum, r) => sum + (r.goFaster ? r.speedRatio : 1 / r.speedRatio),
-          0
-        ) / this.results.length;
-      console.log(
-        `🟢 Go is generally faster (${overallAdvantage.toFixed(2)}x average advantage)`
-      );
+        this.results.reduce((sum, r) => sum + (r.goFaster ? r.speedRatio : 1 / r.speedRatio), 0) / this.results.length;
+      console.log(`🟢 Go is generally faster (${overallAdvantage.toFixed(2)}x average advantage)`);
       console.log("🎯 Choose Go for maximum performance");
-      console.log(
-        "🎯 Choose TypeScript for excellent performance + ecosystem benefits"
-      );
+      console.log("🎯 Choose TypeScript for excellent performance + ecosystem benefits");
     } else {
       console.log("🔵 TypeScript shows competitive or better performance");
       console.log("🎯 TypeScript is an excellent choice for KSUID operations");
@@ -322,20 +287,19 @@ class PerformanceComparison {
       results: this.results,
     };
 
-    writeFileSync(
-      "performance-comparison.json",
-      JSON.stringify(exportData, null, 2)
-    );
-    console.log(
-      "\n📊 Comparison results exported to performance-comparison.json"
-    );
+    writeFileSync("performance-comparison.json", JSON.stringify(exportData, null, 2));
+    console.log("\n📊 Comparison results exported to performance-comparison.json");
   }
 }
 
 // Run comparison
 if (import.meta.main) {
   const comparison = new PerformanceComparison();
-  comparison.runComparison().catch(console.error);
+  try {
+    await comparison.runComparison();
+  } catch (error) {
+    console.error(error);
+  }
 }
 
 export { PerformanceComparison };

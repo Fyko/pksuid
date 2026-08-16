@@ -2,7 +2,7 @@ import { test } from "uvu";
 import * as assert from "uvu/assert";
 import { CompressedSet } from "../../src/compressed-set.ts";
 import { KSUID } from "../../src/ksuid.ts";
-import { Buffer } from "buffer";
+import { Buffer } from "node:buffer";
 
 test("CompressedSet empty set", () => {
   const set = CompressedSet.compress();
@@ -67,18 +67,9 @@ test("CompressedSet with sequence of consecutive KSUIDs", () => {
 
 test("CompressedSet iterator basic functionality", () => {
   const ksuids = [
-    KSUID.fromParts(
-      95004740,
-      Buffer.from("669f7efd7b6fe812278486085878563d", "hex")
-    ),
-    KSUID.fromParts(
-      95004741,
-      Buffer.from("669f7efd7b6fe812278486085878563d", "hex")
-    ),
-    KSUID.fromParts(
-      95004742,
-      Buffer.from("669f7efd7b6fe812278486085878563d", "hex")
-    ),
+    KSUID.fromParts(95_004_740, Buffer.from("669f7efd7b6fe812278486085878563d", "hex")),
+    KSUID.fromParts(95_004_741, Buffer.from("669f7efd7b6fe812278486085878563d", "hex")),
+    KSUID.fromParts(95_004_742, Buffer.from("669f7efd7b6fe812278486085878563d", "hex")),
   ];
 
   const set = CompressedSet.compress(...ksuids);
@@ -100,7 +91,7 @@ test("CompressedSet preserves ordering", () => {
 
   // Create KSUIDs with different timestamps
   for (let i = 0; i < 10; i++) {
-    const timestamp = 95004740 + i * 100;
+    const timestamp = 95_004_740 + i * 100;
     const payload = Buffer.alloc(16);
     payload.fill(i); // Different payload for each
     ksuids.push(KSUID.fromParts(timestamp, payload));
@@ -135,13 +126,7 @@ test("CompressedSet preserves ordering", () => {
 });
 
 test("CompressedSet round trip", () => {
-  const original = [
-    KSUID.random(),
-    KSUID.random(),
-    KSUID.random(),
-    KSUID.random(),
-    KSUID.random(),
-  ];
+  const original = [KSUID.random(), KSUID.random(), KSUID.random(), KSUID.random(), KSUID.random()];
 
   const set = CompressedSet.compress(...original);
   const buffer = set.toBuffer();
@@ -160,7 +145,7 @@ test("CompressedSet round trip", () => {
 
 test("CompressedSet compression efficiency", () => {
   // Create many KSUIDs with same timestamp (should compress well)
-  const timestamp = 95004740;
+  const timestamp = 95_004_740;
   const ksuids: KSUID[] = [];
 
   for (let i = 0; i < 100; i++) {
@@ -185,7 +170,7 @@ test("CompressedSet handles mixed timestamp patterns", () => {
   const ksuids: KSUID[] = [];
 
   // Mix of same timestamp and different timestamps
-  const baseTimestamp = 95004740;
+  const baseTimestamp = 95_004_740;
 
   // Same timestamp, consecutive payloads
   for (let i = 0; i < 5; i++) {
@@ -200,7 +185,7 @@ test("CompressedSet handles mixed timestamp patterns", () => {
 
   // Back to original timestamp
   const payload3 = Buffer.alloc(16);
-  payload3.writeUInt32BE(1000, 12);
+  payload3.writeUInt32BE(1_000, 12);
   ksuids.push(KSUID.fromParts(baseTimestamp, payload3));
 
   const set = CompressedSet.compress(...ksuids);
@@ -216,14 +201,8 @@ test("CompressedSet handles mixed timestamp patterns", () => {
 });
 
 test("CompressedSet toString format", () => {
-  const ksuid1 = KSUID.fromParts(
-    95004740,
-    Buffer.from("669f7efd7b6fe812278486085878563d", "hex")
-  );
-  const ksuid2 = KSUID.fromParts(
-    95004741,
-    Buffer.from("669f7efd7b6fe812278486085878563d", "hex")
-  );
+  const ksuid1 = KSUID.fromParts(95_004_740, Buffer.from("669f7efd7b6fe812278486085878563d", "hex"));
+  const ksuid2 = KSUID.fromParts(95_004_741, Buffer.from("669f7efd7b6fe812278486085878563d", "hex"));
 
   const set = CompressedSet.compress(ksuid1, ksuid2);
   const str = set.toString();

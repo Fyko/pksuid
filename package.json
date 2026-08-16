@@ -8,7 +8,7 @@
     "ksuid": "dist/cli.js"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc -p tsconfig.build.json",
     "test": "uvu test",
     "test:unit": "uvu test/unit",
     "test:integration": "uvu test/integration",
@@ -21,10 +21,10 @@
     "perf:compare": "node test/performance/compare.ts",
     "prepublishOnly": "pnpm run build",
     "cli": "node src/cli.ts",
-    "lint": "eslint . --max-warnings 0",
-    "lint:fix": "eslint . --fix",
-    "format": "prettier --write .",
-    "format:check": "prettier --check .",
+    "lint": "oxlint -c oxlint.config.mjs",
+    "lint:fix": "oxlint -c oxlint.config.mjs --fix",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check",
     "type-check": "tsc --noEmit",
     "quality": "pnpm run format:check && pnpm run lint && pnpm run type-check"
   },
@@ -52,15 +52,11 @@
     "base-x": "^5.0.1"
   },
   "devDependencies": {
-    "@eslint/js": "^10.0.1",
-    "@types/eslint": "^9.6.1",
     "@types/node": "^26.2.0",
-    "@typescript-eslint/eslint-plugin": "^8.67.0",
-    "@typescript-eslint/parser": "^8.67.0",
-    "eslint": "^10.8.1",
-    "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-prettier": "^5.5.6",
-    "prettier": "^3.9.6",
+    "eslint-config-neon": "^0.5.4",
+    "oxfmt": "^0.63.0",
+    "oxlint": "^1.78.0",
+    "oxlint-tsgolint": "^7.0.2001",
     "typescript": "^7.0.2",
     "uvu": "^0.5.6"
   },

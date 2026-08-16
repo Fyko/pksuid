@@ -10,6 +10,9 @@
 import { KSUID, Sequence } from "../../src/index.ts";
 import { performance } from "node:perf_hooks";
 import { writeFileSync } from "node:fs";
+import { setImmediate as yieldToEventLoop } from "node:timers/promises";
+import { setInterval, clearInterval } from "node:timers";
+import process from "node:process";
 
 interface StressTestResult {
   testName: string;
@@ -25,7 +28,7 @@ interface StressTestResult {
 class StressTest {
   private results: StressTestResult[] = [];
 
-  async run(
+  public async run(
     testName: string,
     duration: number,
     operation: () => Promise<void> | void,
@@ -42,18 +45,16 @@ class StressTest {
     let memoryPeakMB = 0;
 
     const startTime = performance.now();
-    const endTime = startTime + duration * 1000;
+    const endTime = startTime + duration * 1_000;
 
     // Monitor memory usage
     const memoryInterval = setInterval(() => {
-      const currentMemoryMB = process.memoryUsage().heapUsed / 1024 / 1024;
+      const currentMemoryMB = process.memoryUsage().heapUsed / 1_024 / 1_024;
       memoryPeakMB = Math.max(memoryPeakMB, currentMemoryMB);
 
       // Check memory limit
       if (options.memoryLimit && currentMemoryMB > options.memoryLimit) {
-        console.warn(
-          `⚠️ Memory usage (${currentMemoryMB.toFixed(2)}MB) exceeded limit (${options.memoryLimit}MB)`
-        );
+        console.warn(`⚠️ Memory usage (${currentMemoryMB.toFixed(2)}MB) exceeded limit (${options.memoryLimit}MB)`);
       }
     }, 100);
 
@@ -64,13 +65,13 @@ class StressTest {
         operations++;
 
         // Optional garbage collection
-        if (options.collectGarbage && operations % 10000 === 0 && global.gc) {
+        if (options.collectGarbage && operations % 10_000 === 0 && global.gc) {
           global.gc();
         }
 
         // Yield occasionally to prevent blocking
-        if (operations % 1000 === 0) {
-          await new Promise(resolve => setImmediate(resolve));
+        if (operations % 1_000 === 0) {
+          await yieldToEventLoop();
         }
       } catch (error) {
         errors++;
@@ -83,9 +84,9 @@ class StressTest {
 
     clearInterval(memoryInterval);
 
-    const actualDuration = (performance.now() - startTime) / 1000;
+    const actualDuration = (performance.now() - startTime) / 1_000;
     const opsPerSecond = Math.round(operations / actualDuration);
-    const memoryFinalMB = process.memoryUsage().heapUsed / 1024 / 1024;
+    const memoryFinalMB = process.memoryUsage().heapUsed / 1_024 / 1_024;
 
     const success =
       errors === 0 &&
@@ -113,7 +114,7 @@ class StressTest {
     return result;
   }
 
-  printResults(): void {
+  public printResults(): void {
     console.log("\n🚀 Stress Test Results");
     console.log("=".repeat(90));
     console.log(
@@ -146,9 +147,7 @@ class StressTest {
       const totalFormatted = result.operations.toLocaleString().padEnd(11);
       const memFormatted = result.memoryPeakMB.toFixed(1).padEnd(9);
       const errorsFormatted = result.errors.toString().padEnd(7);
-      const statusFormatted = (result.success ? "✅ PASS" : "❌ FAIL").padEnd(
-        7
-      );
+      const statusFormatted = (result.success ? "✅ PASS" : "❌ FAIL").padEnd(7);
 
       console.log(
         `| ${result.testName.padEnd(23)} | ${opsFormatted} | ${totalFormatted} | ${memFormatted} | ${errorsFormatted} | ${statusFormatted} |`
@@ -157,11 +156,11 @@ class StressTest {
     console.log("=".repeat(90));
   }
 
-  getResults(): StressTestResult[] {
+  public getResults(): StressTestResult[] {
     return this.results;
   }
 
-  getOverallSuccess(): boolean {
+  public getOverallSuccess(): boolean {
     return this.results.every(r => r.success);
   }
 }
@@ -181,13 +180,11 @@ async function runStressTests(): Promise<void> {
     () => {
       KSUID.random();
     },
-    { expectedMinOps: 50000, memoryLimit: 100 }
+    { expectedMinOps: 50_000, memoryLimit: 100 }
   );
 
   // Test 2: Continuous parsing
-  const testStrings = Array.from({ length: 1000 }, () =>
-    KSUID.random().toString()
-  );
+  const testStrings = Array.from({ length: 1_000 }, () => KSUID.random().toString());
   let parseIndex = 0;
 
   await stressTest.run(
@@ -196,7 +193,7 @@ async function runStressTests(): Promise<void> {
     () => {
       KSUID.parse(testStrings[parseIndex++ % testStrings.length]);
     },
-    { expectedMinOps: 80000, memoryLimit: 50 }
+    { expectedMinOps: 80_000, memoryLimit: 50 }
   );
 
   // Test 3: Memory pressure test
@@ -207,11 +204,11 @@ async function runStressTests(): Promise<void> {
     () => {
       ksuids.push(KSUID.random());
       // Occasionally remove old ones to prevent runaway memory
-      if (ksuids.length > 50000) {
-        ksuids.splice(0, 10000);
+      if (ksuids.length > 50_000) {
+        ksuids.splice(0, 10_000);
       }
     },
-    { expectedMinOps: 40000, memoryLimit: 200 }
+    { expectedMinOps: 40_000, memoryLimit: 200 }
   );
 
   // Test 4: Sequence generation under load
@@ -225,11 +222,11 @@ async function runStressTests(): Promise<void> {
         sequence.next();
       }
     },
-    { expectedMinOps: 5000, memoryLimit: 100 }
+    { expectedMinOps: 5_000, memoryLimit: 100 }
   );
 
   // Test 5: Mixed operations (realistic workload)
-  const mixedData = Array.from({ length: 1000 }, () => KSUID.random());
+  const mixedData = Array.from({ length: 1_000 }, () => KSUID.random());
   let mixedIndex = 0;
 
   await stressTest.run(
@@ -254,7 +251,7 @@ async function runStressTests(): Promise<void> {
           break;
       }
     },
-    { expectedMinOps: 30000, memoryLimit: 150 }
+    { expectedMinOps: 30_000, memoryLimit: 150 }
   );
 
   // Test 6: Concurrent operations simulation
@@ -269,7 +266,7 @@ async function runStressTests(): Promise<void> {
         Promise.resolve(KSUID.random()),
       ]);
     },
-    { expectedMinOps: 15000, memoryLimit: 100 }
+    { expectedMinOps: 15_000, memoryLimit: 100 }
   );
 
   stressTest.printResults();
@@ -277,36 +274,26 @@ async function runStressTests(): Promise<void> {
   // Summary
   const results = stressTest.getResults();
   const totalOperations = results.reduce((sum, r) => sum + r.operations, 0);
-  const averageOpsPerSec = Math.round(
-    results.reduce((sum, r) => sum + r.opsPerSecond, 0) / results.length
-  );
+  const averageOpsPerSec = Math.round(results.reduce((sum, r) => sum + r.opsPerSecond, 0) / results.length);
   const maxMemoryUsage = Math.max(...results.map(r => r.memoryPeakMB));
   const totalErrors = results.reduce((sum, r) => sum + r.errors, 0);
 
   console.log("\n📈 Stress Test Summary:");
   console.log(`🎯 Total Operations: ${totalOperations.toLocaleString()}`);
-  console.log(
-    `🎯 Average Throughput: ${averageOpsPerSec.toLocaleString()} ops/sec`
-  );
+  console.log(`🎯 Average Throughput: ${averageOpsPerSec.toLocaleString()} ops/sec`);
   console.log(`💾 Peak Memory Usage: ${maxMemoryUsage.toFixed(1)} MB`);
   console.log(`❌ Total Errors: ${totalErrors}`);
 
   const overallSuccess = stressTest.getOverallSuccess();
-  console.log(
-    `📊 Overall Result: ${overallSuccess ? "✅ ALL TESTS PASSED" : "❌ SOME TESTS FAILED"}`
-  );
+  console.log(`📊 Overall Result: ${overallSuccess ? "✅ ALL TESTS PASSED" : "❌ SOME TESTS FAILED"}`);
 
   // Production readiness assessment
   console.log("\n🏭 Production Readiness Assessment:");
 
-  if (averageOpsPerSec > 40000) {
-    console.log(
-      "✅ High-throughput performance: Suitable for production workloads"
-    );
+  if (averageOpsPerSec > 40_000) {
+    console.log("✅ High-throughput performance: Suitable for production workloads");
   } else {
-    console.log(
-      "⚠️ Moderate performance: May require optimization for high-load scenarios"
-    );
+    console.log("⚠️ Moderate performance: May require optimization for high-load scenarios");
   }
 
   if (maxMemoryUsage < 150) {
@@ -351,7 +338,11 @@ async function runStressTests(): Promise<void> {
 
 // Run stress tests
 if (import.meta.main) {
-  runStressTests().catch(console.error);
+  try {
+    await runStressTests();
+  } catch (error) {
+    console.error(error);
+  }
 }
 
 export { runStressTests, StressTest };

@@ -31,7 +31,7 @@ import {
   compare,
 } from "../../src/index.ts";
 
-import { Buffer } from "buffer";
+import { Buffer } from "node:buffer";
 
 test("KSUID type signatures", () => {
   // Static methods type signatures
@@ -40,8 +40,8 @@ test("KSUID type signatures", () => {
   const parseOrNil: KSUID = KSUID.parseOrNil("anything");
   const fromBytes: KSUID = KSUID.fromBytes(Buffer.alloc(20));
   const fromBytesOrNil: KSUID = KSUID.fromBytesOrNil(Buffer.alloc(20));
-  const fromParts: KSUID = KSUID.fromParts(123456, Buffer.alloc(16));
-  const fromPartsOrNil: KSUID = KSUID.fromPartsOrNil(123456, Buffer.alloc(16));
+  const fromParts: KSUID = KSUID.fromParts(123_456, Buffer.alloc(16));
+  const fromPartsOrNil: KSUID = KSUID.fromPartsOrNil(123_456, Buffer.alloc(16));
 
   // Static property
   const nil: KSUID = KSUID.nil;
@@ -113,7 +113,7 @@ test("Uint128 type signatures", () => {
   const string: string = uint128.toString();
   const bytes: Buffer = uint128.bytes();
   const buffer: Buffer = uint128.toBuffer();
-  const ksuidBuffer: Buffer = uint128.ksuid(123456);
+  const ksuidBuffer: Buffer = uint128.ksuid(123_456);
   const low: bigint = uint128.getLow();
   const high: bigint = uint128.getHigh();
 
@@ -150,6 +150,7 @@ test("Sequence type signatures", () => {
   const bounds: { min: KSUID; max: KSUID } = sequence.bounds();
   const count: number = sequence.getCount();
   const exhausted: boolean = sequence.isExhausted();
+  // oxlint-disable-next-line typescript/no-invalid-void-type, typescript/no-confusing-void-expression -- contract test asserts the declared void return type
   const reset: void = sequence.reset();
 
   assert.ok(sequence instanceof Sequence);
@@ -177,7 +178,7 @@ test("CompressedSet type signatures", () => {
   assert.ok(fromBuffer instanceof CompressedSet);
   assert.ok(iter instanceof CompressedSetIter);
   assert.ok(Array.isArray(array));
-  array.forEach(k => assert.ok(k instanceof KSUID));
+  for (const k of array) assert.ok(k instanceof KSUID);
   assert.ok(Buffer.isBuffer(buffer));
 });
 
@@ -217,14 +218,8 @@ test("KSUIDError type signatures", () => {
   const stack: string | undefined = error.stack;
 
   // Static factory methods
-  const stringLengthError: KSUIDError = KSUIDError.invalidStringLength(
-    "test",
-    27
-  );
-  const bufferLengthError: KSUIDError = KSUIDError.invalidBufferLength(
-    Buffer.alloc(10),
-    20
-  );
+  const stringLengthError: KSUIDError = KSUIDError.invalidStringLength("test", 27);
+  const bufferLengthError: KSUIDError = KSUIDError.invalidBufferLength(Buffer.alloc(10), 20);
   const characterError: KSUIDError = KSUIDError.invalidCharacter("!", 0);
   const timestampError: KSUIDError = KSUIDError.invalidTimestamp(-1);
   const inputError: KSUIDError = KSUIDError.invalidInput(null, "param");
@@ -324,7 +319,7 @@ test("Parameter type constraints", () => {
   // KSUID.fromBytes("string"); // Should cause TypeScript error
 
   // KSUID.fromParts accepts number and Buffer
-  KSUID.fromParts(123456, Buffer.alloc(16));
+  KSUID.fromParts(123_456, Buffer.alloc(16));
   // KSUID.fromParts("string", Buffer.alloc(16)); // Should cause TypeScript error
 
   // Uint128.makeUint128 accepts two bigints
@@ -376,20 +371,13 @@ test("Generic type constraints", () => {
   // const invalidCode: KSUIDErrorCode = "NOT_A_REAL_CODE"; // Should cause TypeScript error
 
   // Optional parameters in constructors
-  const errorWithOptions = new KSUIDError(
-    "message",
-    KSUID_ERROR_CODES.INVALID_LENGTH,
-    {
-      input: "test",
-      expected: "expected",
-      // actual and cause are optional
-    }
-  );
+  const errorWithOptions = new KSUIDError("message", KSUID_ERROR_CODES.INVALID_LENGTH, {
+    input: "test",
+    expected: "expected",
+    // actual and cause are optional
+  });
 
-  const errorMinimal = new KSUIDError(
-    "message",
-    KSUID_ERROR_CODES.INVALID_LENGTH
-  );
+  const errorMinimal = new KSUIDError("message", KSUID_ERROR_CODES.INVALID_LENGTH);
 
   assert.type(validCode, "string");
   assert.ok(errorWithOptions instanceof KSUIDError);

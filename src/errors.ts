@@ -18,8 +18,7 @@ export const KSUID_ERROR_CODES = {
   OPERATION_FAILED: "OPERATION_FAILED",
 } as const;
 
-export type KSUIDErrorCode =
-  (typeof KSUID_ERROR_CODES)[keyof typeof KSUID_ERROR_CODES];
+export type KSUIDErrorCode = (typeof KSUID_ERROR_CODES)[keyof typeof KSUID_ERROR_CODES];
 
 /**
  * Custom error class for KSUID operations
@@ -34,7 +33,7 @@ export class KSUIDError extends Error {
   public readonly actual?: string;
   public readonly cause?: Error;
 
-  constructor(
+  public constructor(
     message: string,
     code: KSUIDErrorCode,
     options: {
@@ -66,7 +65,7 @@ export class KSUIDError extends Error {
   /**
    * Create an error for invalid string length
    */
-  static invalidStringLength(input: string, expected: number): KSUIDError {
+  public static invalidStringLength(input: string, expected: number): KSUIDError {
     return new KSUIDError(
       `Invalid KSUID string: expected ${expected} characters, got ${input.length}`,
       KSUID_ERROR_CODES.INVALID_LENGTH,
@@ -81,11 +80,7 @@ export class KSUIDError extends Error {
   /**
    * Create an error for invalid buffer length
    */
-  static invalidBufferLength(
-    buffer: Buffer,
-    expected: number,
-    type = "KSUID"
-  ): KSUIDError {
+  public static invalidBufferLength(buffer: Buffer, expected: number, type = "KSUID"): KSUIDError {
     return new KSUIDError(
       `Invalid ${type}: expected ${expected} bytes, got ${buffer.length}`,
       KSUID_ERROR_CODES.INVALID_BUFFER_SIZE,
@@ -100,11 +95,9 @@ export class KSUIDError extends Error {
   /**
    * Create an error for invalid character in KSUID string
    */
-  static invalidCharacter(char: string, position: number): KSUIDError {
-    const displayChar =
-      char.charCodeAt(0) < 32 || char.charCodeAt(0) > 126
-        ? `\\x${char.charCodeAt(0).toString(16).padStart(2, "0")}`
-        : char;
+  public static invalidCharacter(char: string, position: number): KSUIDError {
+    const code = char.codePointAt(0) ?? 0;
+    const displayChar = code < 32 || code > 126 ? `\\x${code.toString(16).padStart(2, "0")}` : char;
 
     return new KSUIDError(
       `Invalid KSUID string: invalid character '${displayChar}' at position ${position}`,
@@ -120,9 +113,8 @@ export class KSUIDError extends Error {
   /**
    * Create an error for invalid timestamp
    */
-  static invalidTimestamp(timestamp: unknown): KSUIDError {
-    const displayTimestamp =
-      typeof timestamp === "number" ? timestamp.toString() : typeof timestamp;
+  public static invalidTimestamp(timestamp: unknown): KSUIDError {
+    const displayTimestamp = typeof timestamp === "number" ? timestamp.toString() : typeof timestamp;
 
     return new KSUIDError(
       `Invalid timestamp: must be uint32 (0 to 4294967295), got ${displayTimestamp}`,
@@ -138,30 +130,22 @@ export class KSUIDError extends Error {
   /**
    * Create an error for null/undefined input
    */
-  static invalidInput(input: unknown, paramName: string): KSUIDError {
-    return new KSUIDError(
-      `Invalid ${paramName}: cannot be null or undefined`,
-      KSUID_ERROR_CODES.INVALID_INPUT,
-      {
-        input,
-        expected: "non-null value",
-        actual: String(input),
-      }
-    );
+  public static invalidInput(input: unknown, paramName: string): KSUIDError {
+    return new KSUIDError(`Invalid ${paramName}: cannot be null or undefined`, KSUID_ERROR_CODES.INVALID_INPUT, {
+      input,
+      expected: "non-null value",
+      actual: String(input),
+    });
   }
 
   /**
    * Create an error for malformed compressed data
    */
-  static malformedData(context: string): KSUIDError {
-    return new KSUIDError(
-      `Malformed data detected: ${context}`,
-      KSUID_ERROR_CODES.MALFORMED_DATA,
-      {
-        expected: "valid compressed data format",
-        actual: "corrupted or invalid data",
-      }
-    );
+  public static malformedData(context: string): KSUIDError {
+    return new KSUIDError(`Malformed data detected: ${context}`, KSUID_ERROR_CODES.MALFORMED_DATA, {
+      expected: "valid compressed data format",
+      actual: "corrupted or invalid data",
+    });
   }
 }
 

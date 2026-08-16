@@ -7,41 +7,41 @@
  * Full benchmarks are too resource-intensive for CI.
  */
 
+import { setTimeout as delay } from "node:timers/promises";
 import { KSUID } from "../../src/index.ts";
-import { performance } from "perf_hooks";
+import { performance } from "node:perf_hooks";
+import process from "node:process";
 
 interface RegressionTest {
   name: string;
   minOpsPerSec: number;
   iterations: number;
-  operation: () => void;
+  operation(): void;
 }
 
 const REGRESSION_TESTS: RegressionTest[] = [
   {
     name: "KSUID Generation",
-    minOpsPerSec: 400000, // Conservative threshold (60% of benchmark)
-    iterations: 50000,
+    minOpsPerSec: 400_000, // Conservative threshold (60% of benchmark)
+    iterations: 50_000,
     operation: () => KSUID.random(),
   },
   {
     name: "KSUID Parsing",
-    minOpsPerSec: 500000, // Conservative threshold (60% of benchmark)
-    iterations: 50000,
+    minOpsPerSec: 500_000, // Conservative threshold (60% of benchmark)
+    iterations: 50_000,
     operation: (() => {
-      const testStrings = Array.from({ length: 1000 }, () =>
-        KSUID.random().toString()
-      );
+      const testStrings = Array.from({ length: 1_000 }, () => KSUID.random().toString());
       let index = 0;
       return () => KSUID.parse(testStrings[index++ % testStrings.length]);
     })(),
   },
   {
     name: "String Encoding",
-    minOpsPerSec: 400000, // Conservative threshold
-    iterations: 50000,
+    minOpsPerSec: 400_000, // Conservative threshold
+    iterations: 50_000,
     operation: (() => {
-      const testKsuids = Array.from({ length: 1000 }, () => KSUID.random());
+      const testKsuids = Array.from({ length: 1_000 }, () => KSUID.random());
       let index = 0;
       return () => testKsuids[index++ % testKsuids.length].toString();
     })(),
@@ -52,7 +52,7 @@ async function runRegressionTest(test: RegressionTest): Promise<boolean> {
   console.log(`🧪 Testing ${test.name}...`);
 
   // Warm up
-  for (let i = 0; i < 1000; i++) {
+  for (let i = 0; i < 1_000; i++) {
     test.operation();
   }
 
@@ -68,21 +68,17 @@ async function runRegressionTest(test: RegressionTest): Promise<boolean> {
   }
 
   const endTime = performance.now();
-  const duration = (endTime - startTime) / 1000; // Convert to seconds
+  const duration = (endTime - startTime) / 1_000; // Convert to seconds
   const opsPerSec = Math.round(test.iterations / duration);
 
   const passed = opsPerSec >= test.minOpsPerSec;
   const status = passed ? "✅ PASS" : "❌ FAIL";
   const percentage = Math.round((opsPerSec / test.minOpsPerSec) * 100);
 
-  console.log(
-    `   ${status} ${opsPerSec.toLocaleString()} ops/sec (${percentage}% of minimum)`
-  );
+  console.log(`   ${status} ${opsPerSec.toLocaleString()} ops/sec (${percentage}% of minimum)`);
 
   if (!passed) {
-    console.error(
-      `   ❌ Performance regression detected! Expected ≥${test.minOpsPerSec.toLocaleString()} ops/sec`
-    );
+    console.error(`   ❌ Performance regression detected! Expected ≥${test.minOpsPerSec.toLocaleString()} ops/sec`);
   }
 
   return passed;
@@ -98,7 +94,7 @@ async function main(): Promise<void> {
     allPassed = allPassed && passed;
 
     // Small delay between tests
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await delay(100);
   }
 
   console.log("\n📊 Regression Test Summary:");
@@ -113,20 +109,22 @@ async function main(): Promise<void> {
   }
 
   // Memory usage check
-  const memoryUsage = process.memoryUsage().heapUsed / 1024 / 1024;
+  const memoryUsage = process.memoryUsage().heapUsed / 1_024 / 1_024;
   console.log(`💾 Memory usage: ${memoryUsage.toFixed(1)} MB`);
 
   if (memoryUsage > 50) {
-    console.warn(
-      "⚠️  Memory usage is higher than expected for regression tests"
-    );
+    console.warn("⚠️  Memory usage is higher than expected for regression tests");
   }
 
   console.log("\n✨ Regression testing complete!");
 }
 
 if (import.meta.main) {
-  main().catch(console.error);
+  try {
+    await main();
+  } catch (error) {
+    console.error(error);
+  }
 }
 
 export { runRegressionTest, REGRESSION_TESTS };

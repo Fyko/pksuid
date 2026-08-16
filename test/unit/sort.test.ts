@@ -2,7 +2,7 @@ import { test } from "uvu";
 import * as assert from "uvu/assert";
 import { sort, isSorted, compare } from "../../src/sort.ts";
 import { KSUID } from "../../src/ksuid.ts";
-import { Buffer } from "buffer";
+import { Buffer } from "node:buffer";
 
 test("sort() empty array", () => {
   const ids: KSUID[] = [];
@@ -23,7 +23,7 @@ test("sort() multiple KSUIDs", () => {
   const ids: KSUID[] = [];
   for (let i = 0; i < 10; i++) {
     // Create KSUIDs with incrementing timestamps and random payloads
-    const timestamp = 95004740 + i * 100; // Different timestamps
+    const timestamp = 95_004_740 + i * 100; // Different timestamps
     const payload = Buffer.alloc(16);
     // Fill with random bytes
     for (let j = 0; j < 16; j++) {
@@ -63,18 +63,9 @@ test("isSorted() single element returns true", () => {
 
 test("isSorted() with sorted array returns true", () => {
   const ids = [
-    KSUID.fromParts(
-      95004740,
-      Buffer.from("669f7efd7b6fe812278486085878563d", "hex")
-    ),
-    KSUID.fromParts(
-      95004741,
-      Buffer.from("669f7efd7b6fe812278486085878563d", "hex")
-    ),
-    KSUID.fromParts(
-      95004742,
-      Buffer.from("669f7efd7b6fe812278486085878563d", "hex")
-    ),
+    KSUID.fromParts(95_004_740, Buffer.from("669f7efd7b6fe812278486085878563d", "hex")),
+    KSUID.fromParts(95_004_741, Buffer.from("669f7efd7b6fe812278486085878563d", "hex")),
+    KSUID.fromParts(95_004_742, Buffer.from("669f7efd7b6fe812278486085878563d", "hex")),
   ];
 
   assert.ok(isSorted(ids));
@@ -82,36 +73,18 @@ test("isSorted() with sorted array returns true", () => {
 
 test("isSorted() with unsorted array returns false", () => {
   const ids = [
-    KSUID.fromParts(
-      95004742,
-      Buffer.from("669f7efd7b6fe812278486085878563d", "hex")
-    ),
-    KSUID.fromParts(
-      95004740,
-      Buffer.from("669f7efd7b6fe812278486085878563d", "hex")
-    ), // Out of order
-    KSUID.fromParts(
-      95004741,
-      Buffer.from("669f7efd7b6fe812278486085878563d", "hex")
-    ),
+    KSUID.fromParts(95_004_742, Buffer.from("669f7efd7b6fe812278486085878563d", "hex")),
+    KSUID.fromParts(95_004_740, Buffer.from("669f7efd7b6fe812278486085878563d", "hex")), // Out of order
+    KSUID.fromParts(95_004_741, Buffer.from("669f7efd7b6fe812278486085878563d", "hex")),
   ];
 
   assert.not.ok(isSorted(ids));
 });
 
 test("compare() function works correctly", () => {
-  const a = KSUID.fromParts(
-    95004740,
-    Buffer.from("669f7efd7b6fe812278486085878563d", "hex")
-  );
-  const b = KSUID.fromParts(
-    95004741,
-    Buffer.from("669f7efd7b6fe812278486085878563d", "hex")
-  );
-  const c = KSUID.fromParts(
-    95004740,
-    Buffer.from("669f7efd7b6fe812278486085878563d", "hex")
-  );
+  const a = KSUID.fromParts(95_004_740, Buffer.from("669f7efd7b6fe812278486085878563d", "hex"));
+  const b = KSUID.fromParts(95_004_741, Buffer.from("669f7efd7b6fe812278486085878563d", "hex"));
+  const c = KSUID.fromParts(95_004_740, Buffer.from("669f7efd7b6fe812278486085878563d", "hex"));
 
   assert.is(compare(a, b), -1); // a < b
   assert.is(compare(b, a), 1); // b > a
@@ -120,20 +93,11 @@ test("compare() function works correctly", () => {
 
 test("sort() maintains stability for equal elements", () => {
   // Create multiple KSUIDs with same timestamp but different payloads
-  const timestamp = 95004740;
+  const timestamp = 95_004_740;
   const ids = [
-    KSUID.fromParts(
-      timestamp,
-      Buffer.from("669f7efd7b6fe812278486085878563d", "hex")
-    ),
-    KSUID.fromParts(
-      timestamp,
-      Buffer.from("669f7efd7b6fe812278486085878563e", "hex")
-    ),
-    KSUID.fromParts(
-      timestamp,
-      Buffer.from("669f7efd7b6fe812278486085878563f", "hex")
-    ),
+    KSUID.fromParts(timestamp, Buffer.from("669f7efd7b6fe812278486085878563d", "hex")),
+    KSUID.fromParts(timestamp, Buffer.from("669f7efd7b6fe812278486085878563e", "hex")),
+    KSUID.fromParts(timestamp, Buffer.from("669f7efd7b6fe812278486085878563f", "hex")),
   ];
 
   // These should already be sorted (same timestamp, different payloads in ascending order)
@@ -149,10 +113,7 @@ test("sort() maintains stability for equal elements", () => {
 });
 
 test("sort() handles duplicate KSUIDs", () => {
-  const ksuid = KSUID.fromParts(
-    95004740,
-    Buffer.from("669f7efd7b6fe812278486085878563d", "hex")
-  );
+  const ksuid = KSUID.fromParts(95_004_740, Buffer.from("669f7efd7b6fe812278486085878563d", "hex"));
   const ids = [ksuid, ksuid, ksuid, ksuid, ksuid];
 
   sort(ids);
@@ -183,7 +144,7 @@ test("sort() preserves array length", () => {
 test("sort() performance with large array", () => {
   // Generate a large array of random KSUIDs
   const ids: KSUID[] = [];
-  for (let i = 0; i < 1000; i++) {
+  for (let i = 0; i < 1_000; i++) {
     ids.push(KSUID.random());
   }
 
@@ -193,10 +154,7 @@ test("sort() performance with large array", () => {
 
   assert.ok(isSorted(ids));
   // Should complete within reasonable time (generous limit for CI)
-  assert.ok(
-    end - start < 1000,
-    `Sorting took ${end - start}ms, expected < 1000ms`
-  );
+  assert.ok(end - start < 1_000, `Sorting took ${end - start}ms, expected < 1000ms`);
 });
 
 test.run();

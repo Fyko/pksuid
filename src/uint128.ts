@@ -1,4 +1,4 @@
-import { Buffer } from "buffer";
+import { Buffer } from "node:buffer";
 import { KSUIDError } from "./errors.ts";
 
 const U64_MAX = 0xffffffffffffffffn;
@@ -8,17 +8,17 @@ export class Uint128 {
   private readonly low: bigint;
   private readonly high: bigint;
 
-  constructor(low: bigint, high: bigint) {
+  public constructor(low: bigint, high: bigint) {
     // Ensure values are within uint64 bounds - explicit BigInt conversion to avoid implicit conversion warnings
     this.low = BigInt(low ?? 0n) & U64_MAX;
     this.high = BigInt(high ?? 0n) & U64_MAX;
   }
 
-  static makeUint128(high: bigint, low: bigint): Uint128 {
+  public static makeUint128(high: bigint, low: bigint): Uint128 {
     return new Uint128(low, high);
   }
 
-  static makeUint128FromPayload(payload: Buffer): Uint128 {
+  public static makeUint128FromPayload(payload: Buffer): Uint128 {
     if (payload == null) {
       throw KSUIDError.invalidInput(payload, "payload");
     }
@@ -33,26 +33,26 @@ export class Uint128 {
     return new Uint128(low, high);
   }
 
-  static uint128Payload(buffer: Buffer): Uint128 {
+  public static uint128Payload(buffer: Buffer): Uint128 {
     // Extract 16-byte payload from KSUID buffer (skip first 4 bytes timestamp)
     const payload = buffer.subarray(4, 20);
     return Uint128.makeUint128FromPayload(payload);
   }
 
-  static zero(): Uint128 {
+  public static zero(): Uint128 {
     return new Uint128(0n, 0n);
   }
 
-  static one(): Uint128 {
+  public static one(): Uint128 {
     return new Uint128(1n, 0n);
   }
 
-  static max(): Uint128 {
+  public static max(): Uint128 {
     return new Uint128(U64_MAX, U64_MAX);
   }
 
   // Create a KSUID with given timestamp and this as payload
-  ksuid(timestamp: number): Buffer {
+  public ksuid(timestamp: number): Buffer {
     const out = Buffer.alloc(20);
     out.writeUInt32BE(timestamp, 0); // timestamp in first 4 bytes
     out.writeBigUInt64BE(this.high, 4); // high 8 bytes
@@ -61,7 +61,7 @@ export class Uint128 {
   }
 
   // Convert to 16-byte buffer (payload format)
-  bytes(): Buffer {
+  public bytes(): Buffer {
     const out = Buffer.alloc(16);
     out.writeBigUInt64BE(this.high, 0); // high bytes first
     out.writeBigUInt64BE(this.low, 8); // low bytes second
@@ -69,16 +69,16 @@ export class Uint128 {
   }
 
   // Alias for bytes() for backward compatibility
-  toBuffer(): Buffer {
+  public toBuffer(): Buffer {
     return this.bytes();
   }
 
   // Static method for creating from buffer
-  static fromBuffer(buffer: Buffer): Uint128 {
+  public static fromBuffer(buffer: Buffer): Uint128 {
     return Uint128.makeUint128FromPayload(buffer);
   }
 
-  add(other: Uint128): Uint128 {
+  public add(other: Uint128): Uint128 {
     // Add with carry handling
     const lowSum = BigInt(this.low) + BigInt(other.low);
     const carry = lowSum > U64_MAX ? 1n : 0n;
@@ -87,7 +87,7 @@ export class Uint128 {
     return new Uint128(newLow, newHigh);
   }
 
-  sub(other: Uint128): Uint128 {
+  public sub(other: Uint128): Uint128 {
     // Subtract with borrow handling
     let newLow = BigInt(this.low) - BigInt(other.low);
     let borrow = 0n;
@@ -101,13 +101,13 @@ export class Uint128 {
     return new Uint128(BigInt(newLow ?? 0n) & U64_MAX, BigInt(newHigh ?? 0n));
   }
 
-  incr(): Uint128 {
+  public incr(): Uint128 {
     const newLow = BigInt(this.low) + 1n;
     const carry = newLow > U64_MAX ? 1n : 0n;
     return new Uint128(newLow & U64_MAX, (BigInt(this.high) + carry) & U64_MAX);
   }
 
-  decr(): Uint128 {
+  public decr(): Uint128 {
     let newLow = BigInt(this.low) - 1n;
     let borrow = 0n;
 
@@ -120,7 +120,7 @@ export class Uint128 {
     return new Uint128(BigInt(newLow ?? 0n) & U64_MAX, BigInt(newHigh ?? 0n));
   }
 
-  compare(other: Uint128): number {
+  public compare(other: Uint128): number {
     if (BigInt(this.high) < BigInt(other.high)) return -1;
     if (BigInt(this.high) > BigInt(other.high)) return 1;
     if (BigInt(this.low) < BigInt(other.low)) return -1;
@@ -128,27 +128,24 @@ export class Uint128 {
     return 0;
   }
 
-  equals(other: Uint128): boolean {
-    return (
-      BigInt(this.low) === BigInt(other.low) &&
-      BigInt(this.high) === BigInt(other.high)
-    );
+  public equals(other: Uint128): boolean {
+    return BigInt(this.low) === BigInt(other.low) && BigInt(this.high) === BigInt(other.high);
   }
 
-  isZero(): boolean {
+  public isZero(): boolean {
     return BigInt(this.low) === 0n && BigInt(this.high) === 0n;
   }
 
-  toString(): string {
+  public toString(): string {
     return `0x${this.high.toString(16).padStart(16, "0")}${this.low.toString(16).padStart(16, "0")}`;
   }
 
   // Getters for internal values
-  getLow(): bigint {
+  public getLow(): bigint {
     return this.low;
   }
 
-  getHigh(): bigint {
+  public getHigh(): bigint {
     return this.high;
   }
 }

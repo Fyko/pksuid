@@ -15,7 +15,7 @@ import {
   compare,
 } from "../../src/index.ts";
 import type { KSUIDErrorCode } from "../../src/index.ts";
-import { Buffer } from "buffer";
+import { Buffer } from "node:buffer";
 
 /**
  * API Contract Tests
@@ -84,7 +84,7 @@ test("KSUID static method signatures contract", () => {
   const validKsuidString = "0o5sKzFDBc56T8mbUP8wH1KpSX7";
   const validBuffer = Buffer.alloc(20);
   const validPayload = Buffer.alloc(16);
-  const validTimestamp = 123456;
+  const validTimestamp = 123_456;
 
   // KSUID.parse(string): KSUID
   const parsed = KSUID.parse(validKsuidString);
@@ -171,14 +171,14 @@ test("Uint128 class API contract", () => {
   assert.type(uint128.toString(), "string");
   assert.ok(Buffer.isBuffer(uint128.bytes()));
   assert.ok(Buffer.isBuffer(uint128.toBuffer()));
-  assert.ok(Buffer.isBuffer(uint128.ksuid(123456)));
+  assert.ok(Buffer.isBuffer(uint128.ksuid(123_456)));
   assert.ok(typeof uint128.getLow() === "bigint");
   assert.ok(typeof uint128.getHigh() === "bigint");
 
   // Buffer lengths are correct
   assert.is(uint128.bytes().length, 16);
   assert.is(uint128.toBuffer().length, 16);
-  assert.is(uint128.ksuid(123456).length, 20);
+  assert.is(uint128.ksuid(123_456).length, 20);
 });
 
 test("Sequence class API contract", () => {
@@ -208,6 +208,7 @@ test("Sequence class API contract", () => {
   assert.type(sequence.isExhausted(), "boolean");
 
   // reset() returns void
+  // oxlint-disable-next-line typescript/no-confusing-void-expression -- contract test asserts the void return value
   const resetResult = sequence.reset();
   assert.is(resetResult, undefined);
 });
@@ -239,7 +240,7 @@ test("CompressedSet class API contract", () => {
 
   const array = compressed.toArray();
   assert.ok(Array.isArray(array));
-  array.forEach(ksuid => assert.ok(ksuid instanceof KSUID));
+  for (const ksuid of array) assert.ok(ksuid instanceof KSUID);
 
   assert.ok(Buffer.isBuffer(compressed.toBuffer()));
 });
@@ -343,7 +344,7 @@ test("Sorting functions API contract", () => {
   const ksuidsToSort = [...ksuids]; // make a copy
   sort(ksuidsToSort); // sort returns void - no return value to test
   assert.is(ksuidsToSort.length, ksuids.length);
-  ksuidsToSort.forEach(ksuid => assert.ok(ksuid instanceof KSUID));
+  for (const ksuid of ksuidsToSort) assert.ok(ksuid instanceof KSUID);
 
   // isSorted(KSUID[]): boolean
   assert.type(isSorted(ksuids), "boolean");

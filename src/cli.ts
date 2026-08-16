@@ -2,6 +2,7 @@
 
 import { KSUID } from "./ksuid.ts";
 import { isKSUIDError } from "./errors.ts";
+import process from "node:process";
 
 interface CLIArgs {
   count: number;
@@ -24,8 +25,8 @@ function parseArgs(args: string[]): CLIArgs {
     const arg = args[i];
 
     if (arg === "-n" && i + 1 < args.length) {
-      parsed.count = parseInt(args[++i], 10);
-      if (isNaN(parsed.count) || parsed.count <= 0) {
+      parsed.count = Number.parseInt(args[++i], 10);
+      if (Number.isNaN(parsed.count) || parsed.count <= 0) {
         parsed.count = 1;
       }
     } else if (arg === "-f" && i + 1 < args.length) {
@@ -86,7 +87,7 @@ REPRESENTATION:
 
 COMPONENTS:
 
-       Time: ${new Date((ksuid.timestamp + 1400000000) * 1000).toISOString()}
+       Time: ${new Date((ksuid.timestamp + 1_400_000_000) * 1_000).toISOString()}
   Timestamp: ${ksuid.timestamp}
     Payload: ${ksuid.payload.toString("hex").toUpperCase()}
 
@@ -95,7 +96,7 @@ COMPONENTS:
 }
 
 function printTime(ksuid: KSUID): void {
-  const timestamp = (ksuid.timestamp + 1400000000) * 1000;
+  const timestamp = (ksuid.timestamp + 1_400_000_000) * 1_000;
   console.log(new Date(timestamp).toISOString());
 }
 
@@ -117,7 +118,7 @@ function printTemplate(ksuid: KSUID, template: string): void {
     process.exit(1);
   }
 
-  const timestamp = (ksuid.timestamp + 1400000000) * 1000;
+  const timestamp = (ksuid.timestamp + 1_400_000_000) * 1_000;
   const data = {
     String: ksuid.toString(),
     Raw: ksuid.toBuffer().toString("hex").toUpperCase(),
@@ -129,11 +130,8 @@ function printTemplate(ksuid: KSUID, template: string): void {
   let result = template;
   for (const [key, value] of Object.entries(data)) {
     // Support both Go template syntax ({{ .Field }}) and simple syntax ({{ Field }})
-    const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    result = result.replace(
-      new RegExp("{{\\s*\\.?" + escapedKey + "\\s*}}", "g"),
-      value.toString()
-    );
+    const escapedKey = key.replaceAll(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    result = result.replaceAll(new RegExp("{{\\s*\\.?" + escapedKey + "\\s*}}", "g"), value.toString());
   }
 
   console.log(result);
@@ -200,9 +198,7 @@ function main(): void {
       } else if (error instanceof Error) {
         console.error(`Error when parsing "${ksuidString}": ${error.message}`);
       } else {
-        console.error(
-          `Unexpected error when parsing "${ksuidString}": ${String(error)}`
-        );
+        console.error(`Unexpected error when parsing "${ksuidString}": ${String(error)}`);
       }
       console.error("");
       printHelp();

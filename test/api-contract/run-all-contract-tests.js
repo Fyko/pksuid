@@ -10,6 +10,7 @@
 
 import { spawn } from "node:child_process";
 import path from "node:path";
+import process from "node:process";
 
 const tests = [
   {
@@ -30,11 +31,7 @@ const tests = [
 ];
 
 // Whitelist of allowed test files to prevent path traversal
-const ALLOWED_TEST_FILES = new Set([
-  "api-contract.test.ts",
-  "cli-contract.test.ts",
-  "type-contract.test.ts",
-]);
+const ALLOWED_TEST_FILES = new Set(["api-contract.test.ts", "cli-contract.test.ts", "type-contract.test.ts"]);
 
 async function runTest(test) {
   return new Promise((resolve, reject) => {
@@ -49,14 +46,8 @@ async function runTest(test) {
     }
 
     // Ensure the file doesn't contain path traversal sequences
-    if (
-      test.file.includes("..") ||
-      test.file.includes("/") ||
-      test.file.includes("\\")
-    ) {
-      reject(
-        new Error(`Test file '${test.file}' contains invalid path characters`)
-      );
+    if (test.file.includes("..") || test.file.includes("/") || test.file.includes("\\")) {
+      reject(new Error(`Test file '${test.file}' contains invalid path characters`));
       return;
     }
 
@@ -84,16 +75,16 @@ async function runTest(test) {
     child.on("close", code => {
       if (code === 0) {
         // Parse test results from stdout
-        const matches = stdout.match(
-          /Total:\s+(\d+).*Passed:\s+(\d+).*Duration:\s+([\d.]+)ms/
+        const matches = /Total:\s+(?<total>\d+).*Passed:\s+(?<passed>\d+).*Duration:\s+(?<duration>[\d.]+)ms/.exec(
+          stdout
         );
-        if (matches) {
-          const [, total, passed, duration] = matches;
+        if (matches?.groups) {
+          const { total, passed, duration } = matches.groups;
           console.log(`   ✅ ${passed}/${total} tests passed (${duration}ms)`);
           resolve({
             success: true,
-            total: parseInt(total),
-            passed: parseInt(passed),
+            total: Number.Number.parseInt(total, 10),
+            passed: Number.Number.parseInt(passed, 10),
           });
         } else {
           console.log(`   ✅ Tests completed successfully`);
@@ -129,12 +120,8 @@ async function main() {
   console.log("🚀 API Contract Test Suite");
   console.log("==========================");
   console.log("");
-  console.log(
-    "This test suite verifies that the public API contract remains stable."
-  );
-  console.log(
-    "Any failures indicate potential breaking changes requiring a major version bump."
-  );
+  console.log("This test suite verifies that the public API contract remains stable.");
+  console.log("Any failures indicate potential breaking changes requiring a major version bump.");
 
   let totalTests = 0;
   let totalPassed = 0;
@@ -167,15 +154,13 @@ async function main() {
     console.log("============================");
     console.log("The following API contract violations were found:\n");
 
-    failures.forEach((failure, index) => {
+    for (const [index, failure] of failures.entries()) {
       console.log(`${index + 1}. ${failure.name}`);
       console.log(`   ${failure.error.split("\n")[0]}`);
       console.log("");
-    });
+    }
 
-    console.log(
-      "⚠️  These failures indicate potential breaking changes that may require"
-    );
+    console.log("⚠️  These failures indicate potential breaking changes that may require");
     console.log("   a MAJOR version bump according to semantic versioning.");
     console.log("");
     console.log("📖 Review the API Versioning Policy:");
@@ -200,10 +185,12 @@ async function main() {
 }
 
 if (import.meta.main) {
-  main().catch(error => {
+  try {
+    await main();
+  } catch (error) {
     console.error("❌ Contract test runner failed:", error);
     process.exit(1);
-  });
+  }
 }
 
 export { runTest, main };

@@ -1,11 +1,11 @@
 import { test } from "uvu";
 import * as assert from "uvu/assert";
 import { KSUID } from "../../src/ksuid.ts";
-import { Buffer } from "buffer";
+import { Buffer } from "node:buffer";
 
 test("KSUID.next() basic functionality", () => {
   // Create a KSUID with a known payload
-  const timestamp = 95004740;
+  const timestamp = 95_004_740;
   const payload = Buffer.from("669f7efd7b6fe812278486085878563d", "hex");
   const ksuid = KSUID.fromParts(timestamp, payload);
 
@@ -21,7 +21,7 @@ test("KSUID.next() basic functionality", () => {
 
 test("KSUID.prev() basic functionality", () => {
   // Create a KSUID with a known payload (not all zeros)
-  const timestamp = 95004740;
+  const timestamp = 95_004_740;
   const payload = Buffer.from("669f7efd7b6fe812278486085878563e", "hex"); // last byte is 3e, not 3d
   const ksuid = KSUID.fromParts(timestamp, payload);
 
@@ -37,7 +37,7 @@ test("KSUID.prev() basic functionality", () => {
 
 test("KSUID.next() with payload overflow", () => {
   // Create a KSUID with maximum payload (all 0xFF)
-  const timestamp = 95004740;
+  const timestamp = 95_004_740;
   const payload = Buffer.alloc(16, 0xff);
   const ksuid = KSUID.fromParts(timestamp, payload);
 
@@ -53,7 +53,7 @@ test("KSUID.next() with payload overflow", () => {
 
 test("KSUID.prev() with payload underflow", () => {
   // Create a KSUID with zero payload
-  const timestamp = 95004740;
+  const timestamp = 95_004_740;
   const payload = Buffer.alloc(16, 0x00);
   const ksuid = KSUID.fromParts(timestamp, payload);
 
@@ -78,7 +78,7 @@ test("KSUID.next().prev() round trip", () => {
 
 test("KSUID.prev().next() round trip", () => {
   // Use a KSUID that won't underflow
-  const timestamp = 95004740;
+  const timestamp = 95_004_740;
   const payload = Buffer.from("669f7efd7b6fe812278486085878563d", "hex");
   const original = KSUID.fromParts(timestamp, payload);
 

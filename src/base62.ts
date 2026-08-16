@@ -1,8 +1,7 @@
-import { Buffer } from "buffer";
+import { Buffer } from "node:buffer";
 import { KSUIDError } from "./errors.ts";
 
-const BASE62_ALPHABET =
-  "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+const BASE62_ALPHABET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 const BASE = BigInt(62);
 const KSUID_BYTE_LENGTH = 20;
 const ENCODED_STRING_LENGTH = 27;
@@ -19,17 +18,13 @@ export class Base62 {
    * @param buffer The 20-byte buffer to encode.
    * @returns The Base62 encoded string.
    */
-  static encode(buffer: Buffer): string {
+  public static encode(buffer: Buffer): string {
     if (buffer == null) {
       throw KSUIDError.invalidInput(buffer, "buffer");
     }
 
     if (buffer.length !== KSUID_BYTE_LENGTH) {
-      throw KSUIDError.invalidBufferLength(
-        buffer,
-        KSUID_BYTE_LENGTH,
-        "KSUID buffer"
-      );
+      throw KSUIDError.invalidBufferLength(buffer, KSUID_BYTE_LENGTH, "KSUID buffer");
     }
 
     // Convert the 20-byte buffer to a single large integer (BigInt).
@@ -44,7 +39,7 @@ export class Base62 {
     // Repeatedly take the number modulo 62 to get the character for each position.
     while (num > 0n) {
       const remainder = num % BASE;
-      num = num / BASE;
+      num /= BASE;
       encoded = BASE62_ALPHABET[Number(remainder)] + encoded;
     }
 
@@ -57,7 +52,7 @@ export class Base62 {
    * @param str The Base62 string to decode.
    * @returns A 20-byte buffer.
    */
-  static decode(str: string): Buffer {
+  public static decode(str: string): Buffer {
     if (str == null) {
       throw KSUIDError.invalidInput(str, "string");
     }

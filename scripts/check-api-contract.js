@@ -8,11 +8,12 @@
  */
 
 import { spawn } from "node:child_process";
+import process from "node:process";
 
 // Whitelist of allowed commands to prevent command injection
 const ALLOWED_COMMANDS = new Set(["pnpm"]);
 
-function runCommand(command, args = []) {
+async function runCommand(command, args = []) {
   // Validate command against whitelist
   if (!ALLOWED_COMMANDS.has(command)) {
     throw new Error(
@@ -38,9 +39,7 @@ async function main() {
   console.log("🔍 API Contract Checker");
   console.log("========================");
   console.log("");
-  console.log(
-    "This tool helps ensure your changes don't introduce breaking changes."
-  );
+  console.log("This tool helps ensure your changes don't introduce breaking changes.");
   console.log("");
 
   try {
@@ -48,9 +47,7 @@ async function main() {
     const buildCode = await runCommand("pnpm", ["run", "build"]);
 
     if (buildCode !== 0) {
-      console.error(
-        "❌ Build failed. Please fix build errors before checking API contract."
-      );
+      console.error("❌ Build failed. Please fix build errors before checking API contract.");
       process.exit(1);
     }
 
@@ -73,16 +70,12 @@ async function main() {
       console.log("");
       console.log("🚨 BREAKING CHANGES DETECTED");
       console.log("");
-      console.log(
-        "Your changes introduce breaking changes that will require a MAJOR version bump."
-      );
+      console.log("Your changes introduce breaking changes that will require a MAJOR version bump.");
       console.log("");
       console.log("📋 Next Steps:");
       console.log("");
       console.log("1. Review the test failures above");
-      console.log(
-        "2. Check docs/api-versioning.md for breaking change guidelines"
-      );
+      console.log("2. Check docs/api-versioning.md for breaking change guidelines");
       console.log("3. Decide if these breaking changes are intentional:");
       console.log("");
       console.log("   🎯 If INTENTIONAL (new major version):");
@@ -110,7 +103,11 @@ async function main() {
 }
 
 if (import.meta.main) {
-  main().catch(console.error);
+  try {
+    await main();
+  } catch (error) {
+    console.error(error);
+  }
 }
 
 export { main };

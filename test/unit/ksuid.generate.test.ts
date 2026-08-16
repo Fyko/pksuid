@@ -1,10 +1,10 @@
 import { test } from "uvu";
 import * as assert from "uvu/assert";
 import { KSUID } from "../../src/ksuid.ts";
-import { Buffer } from "buffer";
+import { Buffer } from "node:buffer";
 
 test("KSUID.fromParts() encode/decode diagnostic", () => {
-  const timestamp = 95004740;
+  const timestamp = 95_004_740;
   const payloadHex = "669f7efd7b6fe812278486085878563d"; // 32 hex chars = 16 bytes
   const payload = Buffer.from(payloadHex, "hex");
 

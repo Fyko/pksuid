@@ -10,6 +10,7 @@
 import { performance } from "node:perf_hooks";
 import { writeFileSync } from "node:fs";
 import { KSUID, Sequence, sort, compare } from "../../src/index.ts";
+import process from "node:process";
 
 interface BenchmarkResult {
   operation: string;
@@ -26,13 +27,9 @@ class Benchmark {
   /**
    * Run a benchmark for a specific operation
    */
-  async run(
-    name: string,
-    iterations: number,
-    operation: () => void | Promise<void>
-  ): Promise<BenchmarkResult> {
+  public async run(name: string, iterations: number, operation: () => void | Promise<void>): Promise<BenchmarkResult> {
     // Warm up
-    for (let i = 0; i < Math.min(1000, iterations / 10); i++) {
+    for (let i = 0; i < Math.min(1_000, iterations / 10); i++) {
       await operation();
     }
 
@@ -41,7 +38,7 @@ class Benchmark {
       global.gc();
     }
 
-    const memBefore = process.memoryUsage().heapUsed / 1024 / 1024;
+    const memBefore = process.memoryUsage().heapUsed / 1_024 / 1_024;
     const startTime = performance.now();
 
     // Run benchmark
@@ -50,18 +47,18 @@ class Benchmark {
     }
 
     const endTime = performance.now();
-    const memAfter = process.memoryUsage().heapUsed / 1024 / 1024;
+    const memAfter = process.memoryUsage().heapUsed / 1_024 / 1_024;
 
     const totalTimeMs = endTime - startTime;
     const avgTimeMs = totalTimeMs / iterations;
-    const opsPerSecond = Math.round(1000 / avgTimeMs);
+    const opsPerSecond = Math.round(1_000 / avgTimeMs);
     const memoryUsageMB = memAfter - memBefore;
 
     const result: BenchmarkResult = {
       operation: name,
       iterations,
       totalTimeMs: Math.round(totalTimeMs * 100) / 100,
-      avgTimeMs: Math.round(avgTimeMs * 1000000) / 1000000, // microseconds precision
+      avgTimeMs: Math.round(avgTimeMs * 1_000_000) / 1_000_000, // microseconds precision
       opsPerSecond,
       memoryUsageMB: Math.round(memoryUsageMB * 100) / 100,
     };
@@ -73,7 +70,7 @@ class Benchmark {
   /**
    * Print results in a formatted table
    */
-  printResults(): void {
+  public printResults(): void {
     console.log("\n🚀 @owpz/ksuid Performance Benchmark Results");
     console.log("=".repeat(80));
     console.log(
@@ -101,9 +98,7 @@ class Benchmark {
     for (const result of this.results) {
       const opsFormatted = result.opsPerSecond.toLocaleString().padEnd(11);
       const avgFormatted = `${result.avgTimeMs.toFixed(3)}ms`.padEnd(14);
-      const memFormatted = result.memoryUsageMB
-        ? result.memoryUsageMB.toFixed(2).padEnd(11)
-        : "N/A".padEnd(11);
+      const memFormatted = result.memoryUsageMB ? result.memoryUsageMB.toFixed(2).padEnd(11) : "N/A".padEnd(11);
       const iterFormatted = result.iterations.toLocaleString().padEnd(11);
 
       console.log(
@@ -116,7 +111,7 @@ class Benchmark {
   /**
    * Get results as JSON for CI/automation
    */
-  getResults(): BenchmarkResult[] {
+  public getResults(): BenchmarkResult[] {
     return this.results;
   }
 }
@@ -135,7 +130,7 @@ async function runBenchmarks(): Promise<void> {
   const testBuffers: Buffer[] = [];
 
   console.log("📊 Generating test data...");
-  for (let i = 0; i < 10000; i++) {
+  for (let i = 0; i < 10_000; i++) {
     const ksuid = KSUID.random();
     testKsuids.push(ksuid);
     testStrings.push(ksuid.toString());
@@ -143,50 +138,50 @@ async function runBenchmarks(): Promise<void> {
   }
 
   // 1. KSUID Generation Benchmark
-  await benchmark.run("Random Generation", 100000, () => {
+  await benchmark.run("Random Generation", 100_000, () => {
     KSUID.random();
   });
 
   // 2. KSUID Parsing Benchmark
   let parseIndex = 0;
-  await benchmark.run("String Parsing", 100000, () => {
+  await benchmark.run("String Parsing", 100_000, () => {
     KSUID.parse(testStrings[parseIndex++ % testStrings.length]);
   });
 
   // 3. KSUID String Encoding Benchmark
   let encodeIndex = 0;
-  await benchmark.run("String Encoding", 100000, () => {
+  await benchmark.run("String Encoding", 100_000, () => {
     testKsuids[encodeIndex++ % testKsuids.length].toString();
   });
 
   // 4. Buffer Operations Benchmark
   let bufferIndex = 0;
-  await benchmark.run("Buffer Conversion", 100000, () => {
+  await benchmark.run("Buffer Conversion", 100_000, () => {
     testKsuids[bufferIndex++ % testKsuids.length].toBuffer();
   });
 
   // 5. fromBytes Benchmark
   let fromBytesIndex = 0;
-  await benchmark.run("From Bytes", 100000, () => {
+  await benchmark.run("From Bytes", 100_000, () => {
     KSUID.fromBytes(testBuffers[fromBytesIndex++ % testBuffers.length]);
   });
 
   // 6. Next/Prev Operations Benchmark
   let nextPrevIndex = 0;
-  await benchmark.run("Next Operation", 50000, () => {
+  await benchmark.run("Next Operation", 50_000, () => {
     const ksuid = testKsuids[nextPrevIndex++ % testKsuids.length];
     ksuid.next();
   });
 
   let prevIndex = 0;
-  await benchmark.run("Prev Operation", 50000, () => {
+  await benchmark.run("Prev Operation", 50_000, () => {
     const ksuid = testKsuids[prevIndex++ % testKsuids.length];
     ksuid.prev();
   });
 
   // 7. Comparison Benchmark
   let compareIndex = 0;
-  await benchmark.run("Comparison", 100000, () => {
+  await benchmark.run("Comparison", 100_000, () => {
     const a = testKsuids[compareIndex % testKsuids.length];
     const b = testKsuids[(compareIndex + 1) % testKsuids.length];
     compareIndex++;
@@ -194,13 +189,13 @@ async function runBenchmarks(): Promise<void> {
   });
 
   // 8. Sorting Benchmark (smaller dataset)
-  await benchmark.run("Sorting (1K items)", 1000, () => {
-    const subset = testKsuids.slice(0, 1000).map(k => k); // Copy to avoid mutation
+  await benchmark.run("Sorting (1K items)", 1_000, () => {
+    const subset = testKsuids.slice(0, 1_000).map(k => k); // Copy to avoid mutation
     sort(subset);
   });
 
   // 9. Sequence Generation Benchmark
-  await benchmark.run("Sequence Generation", 10000, () => {
+  await benchmark.run("Sequence Generation", 10_000, () => {
     const sequence = new Sequence({ seed: KSUID.random() });
     const results = [];
     for (let i = 0; i < 100; i++) {
@@ -211,13 +206,13 @@ async function runBenchmarks(): Promise<void> {
 
   // 10. Component Access Benchmark
   let accessIndex = 0;
-  await benchmark.run("Timestamp Access", 100000, () => {
+  await benchmark.run("Timestamp Access", 100_000, () => {
     const ksuid = testKsuids[accessIndex++ % testKsuids.length];
     void ksuid.timestamp; // Explicitly void to indicate intentional unused access
   });
 
   let payloadIndex = 0;
-  await benchmark.run("Payload Access", 100000, () => {
+  await benchmark.run("Payload Access", 100_000, () => {
     const ksuid = testKsuids[payloadIndex++ % testKsuids.length];
     void ksuid.payload; // Explicitly void to indicate intentional unused access
   });
@@ -234,12 +229,10 @@ async function runBenchmarks(): Promise<void> {
   const sorting = results.find(r => r.operation === "Sorting (1K items)");
 
   if (generation) {
-    console.log(
-      `🎯 Generation: ${generation.opsPerSecond.toLocaleString()} KSUIDs/sec`
-    );
-    if (generation.opsPerSecond > 80000) {
+    console.log(`🎯 Generation: ${generation.opsPerSecond.toLocaleString()} KSUIDs/sec`);
+    if (generation.opsPerSecond > 80_000) {
       console.log("   ✅ Excellent generation performance");
-    } else if (generation.opsPerSecond > 50000) {
+    } else if (generation.opsPerSecond > 50_000) {
       console.log("   ⚠️  Good generation performance");
     } else {
       console.log("   ❌ Generation performance below expectations");
@@ -247,12 +240,10 @@ async function runBenchmarks(): Promise<void> {
   }
 
   if (parsing) {
-    console.log(
-      `🎯 Parsing: ${parsing.opsPerSecond.toLocaleString()} parses/sec`
-    );
-    if (parsing.opsPerSecond > 150000) {
+    console.log(`🎯 Parsing: ${parsing.opsPerSecond.toLocaleString()} parses/sec`);
+    if (parsing.opsPerSecond > 150_000) {
       console.log("   ✅ Excellent parsing performance");
-    } else if (parsing.opsPerSecond > 100000) {
+    } else if (parsing.opsPerSecond > 100_000) {
       console.log("   ⚠️  Good parsing performance");
     } else {
       console.log("   ❌ Parsing performance below expectations");
@@ -260,15 +251,12 @@ async function runBenchmarks(): Promise<void> {
   }
 
   if (sorting) {
-    const itemsPerSec = sorting.opsPerSecond * 1000; // 1K items per operation
+    const itemsPerSec = sorting.opsPerSecond * 1_000; // 1K items per operation
     console.log(`🎯 Sorting: ${itemsPerSec.toLocaleString()} items/sec`);
   }
 
   // Memory usage analysis
-  const totalMemory = results.reduce(
-    (sum, r) => sum + (r.memoryUsageMB || 0),
-    0
-  );
+  const totalMemory = results.reduce((sum, r) => sum + (r.memoryUsageMB ?? 0), 0);
   console.log(`💾 Total memory overhead: ${totalMemory.toFixed(2)} MB`);
 
   // Export results for CI
@@ -283,7 +271,11 @@ async function runBenchmarks(): Promise<void> {
 
 // Run benchmarks
 if (import.meta.main) {
-  runBenchmarks().catch(console.error);
+  try {
+    await runBenchmarks();
+  } catch (error) {
+    console.error(error);
+  }
 }
 
 export { runBenchmarks, Benchmark };

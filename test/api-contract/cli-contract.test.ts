@@ -1,6 +1,9 @@
 import { test } from "uvu";
 import * as assert from "uvu/assert";
-import { spawn } from "child_process";
+import { spawn } from "node:child_process";
+import process from "node:process";
+import { Buffer } from "node:buffer";
+import { setTimeout, clearTimeout } from "node:timers";
 
 /**
  * CLI API Contract Tests
@@ -33,6 +36,12 @@ async function runCLI(args: string[]): Promise<CLIResult> {
     let stdout = "";
     let stderr = "";
 
+    // Timeout after 15 seconds (increased for test suite environment)
+    const timeout = setTimeout(() => {
+      child.kill();
+      reject(new Error("CLI command timed out after 15 seconds"));
+    }, 15_000);
+
     child.stdout?.on("data", data => {
       stdout += data.toString();
     });
@@ -46,7 +55,7 @@ async function runCLI(args: string[]): Promise<CLIResult> {
       resolve({
         stdout,
         stderr,
-        exitCode: code || 0,
+        exitCode: code ?? 0,
       });
     });
 
@@ -54,12 +63,6 @@ async function runCLI(args: string[]): Promise<CLIResult> {
       clearTimeout(timeout);
       reject(error);
     });
-
-    // Timeout after 15 seconds (increased for test suite environment)
-    const timeout = setTimeout(() => {
-      child.kill();
-      reject(new Error("CLI command timed out after 15 seconds"));
-    }, 15000);
   });
 }
 
@@ -167,7 +170,7 @@ test("CLI timestamp format contract", async () => {
   const output = result.stdout.trim();
   // Should be numeric timestamp
   assert.match(output, /^\d+$/);
-  assert.ok(parseInt(output) > 0);
+  assert.ok(Number.parseInt(output, 10) > 0);
 });
 
 test("CLI verbose mode contract", async () => {
@@ -233,22 +236,14 @@ test("CLI template missing option error contract", async () => {
 
 test("CLI option parsing contract", async () => {
   // Test various argument patterns that should work
-  const testCases = [
-    ["-n", "1"],
-    ["-n1"],
-    ["-f", "string"],
-    ["-fstring"],
-    ["-v", "-n", "2"],
-    ["-vn2"],
-    ["--help"],
-  ];
+  const testCases = [["-n", "1"], ["-n1"], ["-f", "string"], ["-fstring"], ["-v", "-n", "2"], ["-vn2"], ["--help"]];
 
   for (const args of testCases) {
     try {
       const result = await runCLI(args);
       // Should not crash (exit code 0 or 1 are both acceptable)
       assert.ok(result.exitCode === 0 || result.exitCode === 1);
-    } catch (error) {
+    } catch {
       assert.unreachable(`CLI crashed with args: ${args.join(" ")}`);
     }
   }

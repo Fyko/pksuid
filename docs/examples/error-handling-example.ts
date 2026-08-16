@@ -8,13 +8,9 @@
  * gracefully in production applications.
  */
 
-import {
-  KSUID,
-  KSUIDError,
-  isKSUIDError,
-  KSUID_ERROR_CODES,
-  type KSUIDErrorCode,
-} from "../../src";
+import { Buffer } from "node:buffer";
+
+import { type KSUIDError, KSUID, isKSUIDError, KSUID_ERROR_CODES, type KSUIDErrorCode } from "../../src/index.ts";
 
 // Example 1: Basic error handling with type guards
 function demonstrateBasicErrorHandling() {
@@ -64,6 +60,24 @@ function handleSpecificErrors(input: string): {
         return { success: false, reason: "invalid_characters" };
       case KSUID_ERROR_CODES.INVALID_INPUT:
         return { success: false, reason: "null_input" };
+      case "CORRUPTION_DETECTED": {
+        throw new Error('Not implemented yet: "CORRUPTION_DETECTED" case');
+      }
+      case "INVALID_BUFFER_SIZE": {
+        throw new Error('Not implemented yet: "INVALID_BUFFER_SIZE" case');
+      }
+      case "INVALID_TIMESTAMP": {
+        throw new Error('Not implemented yet: "INVALID_TIMESTAMP" case');
+      }
+      case "MALFORMED_DATA": {
+        throw new Error('Not implemented yet: "MALFORMED_DATA" case');
+      }
+      case "OPERATION_FAILED": {
+        throw new Error('Not implemented yet: "OPERATION_FAILED" case');
+      }
+      case "SEQUENCE_EXHAUSTED": {
+        throw new Error('Not implemented yet: "SEQUENCE_EXHAUSTED" case');
+      }
       default:
         return { success: false, reason: "unknown_error" };
     }
@@ -90,21 +104,15 @@ function demonstrateSpecificErrorHandling() {
 // Example 3: User-friendly error messages
 function getUserFriendlyMessage(error: KSUIDError): string {
   const friendlyMessages: Record<KSUIDErrorCode, string> = {
-    [KSUID_ERROR_CODES.INVALID_LENGTH]:
-      "The ID must be exactly 27 characters long.",
-    [KSUID_ERROR_CODES.INVALID_CHARACTER]:
-      "The ID contains invalid characters. Please use only letters and numbers.",
-    [KSUID_ERROR_CODES.INVALID_BUFFER_SIZE]:
-      "The data buffer has an incorrect size.",
-    [KSUID_ERROR_CODES.INVALID_TIMESTAMP]:
-      "The timestamp is outside the valid range.",
+    [KSUID_ERROR_CODES.INVALID_LENGTH]: "The ID must be exactly 27 characters long.",
+    [KSUID_ERROR_CODES.INVALID_CHARACTER]: "The ID contains invalid characters. Please use only letters and numbers.",
+    [KSUID_ERROR_CODES.INVALID_BUFFER_SIZE]: "The data buffer has an incorrect size.",
+    [KSUID_ERROR_CODES.INVALID_TIMESTAMP]: "The timestamp is outside the valid range.",
     [KSUID_ERROR_CODES.INVALID_INPUT]: "The input cannot be empty or null.",
     [KSUID_ERROR_CODES.MALFORMED_DATA]: "The data appears to be corrupted.",
     [KSUID_ERROR_CODES.CORRUPTION_DETECTED]: "Data corruption was detected.",
-    [KSUID_ERROR_CODES.SEQUENCE_EXHAUSTED]:
-      "The sequence has reached its maximum capacity.",
-    [KSUID_ERROR_CODES.OPERATION_FAILED]:
-      "The operation could not be completed.",
+    [KSUID_ERROR_CODES.SEQUENCE_EXHAUSTED]: "The sequence has reached its maximum capacity.",
+    [KSUID_ERROR_CODES.OPERATION_FAILED]: "The operation could not be completed.",
   };
 
   return friendlyMessages[error.code] || "An unknown error occurred.";
@@ -139,9 +147,7 @@ function demonstrateGracefulDegradation() {
     const ksuid = KSUID.parseOrNil(input);
 
     if (ksuid.isNil()) {
-      console.log(
-        `❌ Failed to parse "${String(input)}", using default behavior`
-      );
+      console.log(`❌ Failed to parse "${String(input)}", using default behavior`);
     } else {
       console.log(`✅ Successfully parsed: ${ksuid.toString()}`);
     }
@@ -173,7 +179,7 @@ function demonstrateAdvancedValidation() {
 
   // Invalid payload size
   try {
-    KSUID.fromParts(123456, Buffer.alloc(10)); // Wrong payload size
+    KSUID.fromParts(123_456, Buffer.alloc(10)); // Wrong payload size
   } catch (error) {
     if (isKSUIDError(error)) {
       console.log(`Payload validation: ${error.message}`);
@@ -184,12 +190,14 @@ function demonstrateAdvancedValidation() {
 
 // Example 6: Custom application error wrapping
 class ApplicationError extends Error {
-  constructor(
-    message: string,
-    public readonly context: string,
-    public readonly originalError: KSUIDError
-  ) {
+  public readonly context: string;
+
+  public readonly originalError: KSUIDError;
+
+  public constructor(message: string, context: string, originalError: KSUIDError) {
     super(message);
+    this.context = context;
+    this.originalError = originalError;
     this.name = "ApplicationError";
   }
 }
@@ -271,9 +279,7 @@ function demonstrateStructuredLogging() {
 // Run all examples
 function main() {
   console.log("🔍 KSUID Error Handling Examples\n");
-  console.log(
-    "This demonstrates comprehensive error handling for production applications.\n"
-  );
+  console.log("This demonstrates comprehensive error handling for production applications.\n");
 
   demonstrateBasicErrorHandling();
   demonstrateSpecificErrorHandling();
@@ -293,6 +299,6 @@ function main() {
 }
 
 // Run examples if this file is executed directly
-if (require.main === module) {
+if (import.meta.main) {
   main();
 }

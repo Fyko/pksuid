@@ -4,7 +4,8 @@ import { KSUID } from "../../src/ksuid.ts";
 import { Base62 } from "../../src/base62.ts";
 import { Sequence } from "../../src/sequence.ts";
 import { CompressedSet } from "../../src/compressed-set.ts";
-import { Buffer } from "buffer";
+import { Buffer } from "node:buffer";
+import process from "node:process";
 
 test("KSUID error message consistency", () => {
   // Test that error messages are consistent and helpful
@@ -34,7 +35,7 @@ test("Base62 error handling edge cases", () => {
     "a", // Too short
     "a".repeat(28), // Too long
     "!".repeat(27), // Invalid characters
-    "\x00".repeat(27), // Null characters
+    "\u0000".repeat(27), // Null characters
     "🚀".repeat(9), // Unicode characters
     " ".repeat(27), // Spaces
     "\n".repeat(27), // Newlines
@@ -43,16 +44,11 @@ test("Base62 error handling edge cases", () => {
   for (const invalid of invalidInputs) {
     assert.throws(
       () => Base62.decode(invalid),
-      (error: Error) => {
+      (error: Error) =>
         // Should be a meaningful error message
-        return (
-          error.message.length > 0 &&
-          (error.message.includes("character") ||
-            error.message.includes("length") ||
-            error.message.includes("KSUID"))
-        );
-      },
-      `Should throw meaningful error for: "${invalid.replace(/\n/g, "\\n").replace(/\x00/g, "\\0")}"`
+        error.message.length > 0 &&
+        (error.message.includes("character") || error.message.includes("length") || error.message.includes("KSUID")),
+      `Should throw meaningful error for: "${invalid.replaceAll("\n", "\\n").replaceAll("\0", "\\0")}"`
     );
   }
 });
@@ -126,7 +122,7 @@ test("Memory exhaustion protection", () => {
 
   // Generate many KSUIDs
   const ksuids: KSUID[] = [];
-  for (let i = 0; i < 1000; i++) {
+  for (let i = 0; i < 1_000; i++) {
     ksuids.push(KSUID.random());
   }
 
@@ -135,22 +131,16 @@ test("Memory exhaustion protection", () => {
   const decompressed = set.toArray();
 
   // Verify we got some KSUIDs back (compression may reduce duplicates)
-  assert.ok(
-    decompressed.length >= 100,
-    `Should get reasonable number of KSUIDs back, got ${decompressed.length}`
-  );
+  assert.ok(decompressed.length >= 100, `Should get reasonable number of KSUIDs back, got ${decompressed.length}`);
 
   const finalMemory = process.memoryUsage().heapUsed;
-  const memoryIncrease = (finalMemory - initialMemory) / 1024 / 1024; // MB
+  const memoryIncrease = (finalMemory - initialMemory) / 1_024 / 1_024; // MB
 
   // Should not consume more than 10MB for 1000 KSUIDs
-  assert.ok(
-    memoryIncrease < 10,
-    `Memory increase ${memoryIncrease.toFixed(2)}MB should be reasonable`
-  );
+  assert.ok(memoryIncrease < 10, `Memory increase ${memoryIncrease.toFixed(2)}MB should be reasonable`);
 });
 
-test("Concurrent access safety", () => {
+test("Concurrent access safety", async () => {
   // Test that operations are safe when called concurrently
   // Note: JavaScript is single-threaded, but test rapid successive calls
 
@@ -158,31 +148,28 @@ test("Concurrent access safety", () => {
 
   // Generate KSUIDs rapidly
   for (let i = 0; i < 100; i++) {
-    promises.push(Promise.resolve().then(() => KSUID.random()));
+    promises.push((async () => KSUID.random())());
   }
 
-  return Promise.all(promises).then(ksuids => {
+  const ksuids = await Promise.all(promises);
+  {
     // All should be unique
     const strings = ksuids.map(k => k.toString());
     const uniqueStrings = new Set(strings);
-    assert.is(
-      uniqueStrings.size,
-      strings.length,
-      "All KSUIDs should be unique"
-    );
+    assert.is(uniqueStrings.size, strings.length, "All KSUIDs should be unique");
 
     // All should be valid
     for (const ksuid of ksuids) {
       assert.not.ok(ksuid.isNil());
       assert.is(ksuid.toString().length, 27);
     }
-  });
+  }
 });
 
 test("Input sanitization", () => {
   // Test that inputs are properly sanitized
   const maliciousInputs = [
-    "0o5sKzFDBc56T8mbUP8wH1KpSX7\x00", // Null terminator
+    "0o5sKzFDBc56T8mbUP8wH1KpSX7\u0000", // Null terminator
     "0o5sKzFDBc56T8mbUP8wH1KpSX7\n", // Newline
     "0o5sKzFDBc56T8mbUP8wH1KpSX7 ", // Trailing space
     " 0o5sKzFDBc56T8mbUP8wH1KpSX7", // Leading space
@@ -195,13 +182,15 @@ test("Input sanitization", () => {
     const result = KSUID.parseOrNil(malicious);
     assert.ok(
       result.isNil(),
-      `parseOrNil should reject: "${malicious.replace(/[\x00-\x1F]/g, "?")}"`
+      // oxlint-disable-next-line no-control-regex -- sanitizing control chars for display
+      `parseOrNil should reject: "${malicious.replaceAll(/[\u0000-\u001F]/g, "?")}"`
     );
 
     // parse should throw
     assert.throws(
       () => KSUID.parse(malicious),
-      `parse should reject: "${malicious.replace(/[\x00-\x1F]/g, "?")}"`
+      // oxlint-disable-next-line no-control-regex -- sanitizing control chars for display
+      `parse should reject: "${malicious.replaceAll(/[\u0000-\u001F]/g, "?")}"`
     );
   }
 });
@@ -216,17 +205,9 @@ test("Stack trace preservation", () => {
     // Node.js version compatibility: Different versions format static method names differently
     // v24+: "KSUID.parse", v20-22: "parse" or "Function.parse"
     const hasParseInStack =
-      error.stack.includes("KSUID.parse") ||
-      error.stack.includes(".parse") ||
-      error.stack.includes("parse");
-    assert.ok(
-      hasParseInStack,
-      "Stack trace should include calling function (KSUID.parse, .parse, or parse)"
-    );
-    assert.ok(
-      error.message.includes("27 characters"),
-      "Error message should be descriptive"
-    );
+      error.stack.includes("KSUID.parse") || error.stack.includes(".parse") || error.stack.includes("parse");
+    assert.ok(hasParseInStack, "Stack trace should include calling function (KSUID.parse, .parse, or parse)");
+    assert.ok(error.message.includes("27 characters"), "Error message should be descriptive");
   }
 });
 

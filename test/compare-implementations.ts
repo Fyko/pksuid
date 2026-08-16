@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 
 import { KSUID } from "../src/ksuid.ts";
-import { Buffer } from "buffer";
+import { Buffer } from "node:buffer";
+import process from "node:process";
 
 /**
  * Comprehensive comparison script to verify Go and TypeScript KSUID implementations
@@ -20,7 +21,7 @@ interface TestVector {
 const GO_TEST_VECTORS: TestVector[] = [
   {
     description: "Fixed timestamp with known payload",
-    timestamp: 95004740,
+    timestamp: 95_004_740,
     payload: "669f7efd7b6fe812278486085878563d",
     expectedString: "0o5sKzFDBc56T8mbUP8wH1KpSX7",
     expectedRaw: "05a9a844669f7efd7b6fe812278486085878563d",
@@ -34,7 +35,7 @@ const GO_TEST_VECTORS: TestVector[] = [
   },
   {
     description: "Max timestamp with specific payload",
-    timestamp: 4294967295, // Max uint32
+    timestamp: 4_294_967_295, // Max uint32
     payload: "abcdef0123456789abcdef0123456789",
     expectedString: "aWgEPRC9f9y39AiMcAMCXnpvSIr",
     expectedRaw: "ffffffffabcdef0123456789abcdef0123456789",
@@ -108,8 +109,7 @@ function compareBasicGeneration() {
     const payloadMatch = extractedPayload === testCase.payload;
     console.log(`  ✓ Payload match: ${payloadMatch}`);
 
-    const testPassed =
-      timestampMatch && stringMatch && rawMatch && payloadMatch;
+    const testPassed = timestampMatch && stringMatch && rawMatch && payloadMatch;
     console.log(`  → Test Result: ${testPassed ? "PASS" : "FAIL"}\n`);
 
     if (!testPassed) allPassed = false;
@@ -153,12 +153,12 @@ function compareNextPrevOperations() {
 function compareTimestampConversion() {
   console.log("=== TIMESTAMP CONVERSION COMPARISON ===\n");
 
-  const KSUID_EPOCH = 1400000000; // 2014-05-13T16:53:20Z
+  const KSUID_EPOCH = 1_400_000_000; // 2014-05-13T16:53:20Z
 
   const testCases = [
     { ksuidTimestamp: 0, description: "KSUID epoch" },
-    { ksuidTimestamp: 95004740, description: "Standard timestamp" },
-    { ksuidTimestamp: 4294967295, description: "Maximum timestamp" },
+    { ksuidTimestamp: 95_004_740, description: "Standard timestamp" },
+    { ksuidTimestamp: 4_294_967_295, description: "Maximum timestamp" },
   ];
 
   let allPassed = true;
@@ -217,9 +217,7 @@ function compareSequenceGeneration() {
 
   for (let i = 0; i < expectedSequence.length; i++) {
     const match = tsSequence[i] === expectedSequence[i];
-    console.log(
-      `  Step ${i}: Expected ${expectedSequence[i]}, Got ${tsSequence[i]} - ${match ? "PASS" : "FAIL"}`
-    );
+    console.log(`  Step ${i}: Expected ${expectedSequence[i]}, Got ${tsSequence[i]} - ${match ? "PASS" : "FAIL"}`);
     if (!match) allPassed = false;
   }
 
@@ -232,41 +230,28 @@ function compareBinaryFormat() {
   console.log("=== BINARY FORMAT COMPARISON ===\n");
 
   // Test exact binary format compatibility
-  const testKSUID = KSUID.fromParts(
-    0x05a9a844,
-    Buffer.from("669f7efd7b6fe812278486085878563d", "hex")
-  );
+  const testKSUID = KSUID.fromParts(0x05a9a844, Buffer.from("669f7efd7b6fe812278486085878563d", "hex"));
 
   const buffer = testKSUID.toBuffer();
 
   console.log("Binary format validation:");
   console.log(`  Buffer length: ${buffer.length} bytes (expected: 20)`);
-  console.log(
-    `  First 4 bytes (timestamp): ${buffer.subarray(0, 4).toString("hex")}`
-  );
-  console.log(
-    `  Next 16 bytes (payload): ${buffer.subarray(4, 20).toString("hex")}`
-  );
+  console.log(`  First 4 bytes (timestamp): ${buffer.subarray(0, 4).toString("hex")}`);
+  console.log(`  Next 16 bytes (payload): ${buffer.subarray(4, 20).toString("hex")}`);
   console.log(`  Complete buffer: ${buffer.toString("hex")}`);
 
   const lengthCorrect = buffer.length === 20;
   const timestampCorrect = buffer.readUInt32BE(0) === 0x05a9a844;
-  const payloadCorrect =
-    buffer.subarray(4, 20).toString("hex") ===
-    "669f7efd7b6fe812278486085878563d";
-  const completeCorrect =
-    buffer.toString("hex") === "05a9a844669f7efd7b6fe812278486085878563d";
+  const payloadCorrect = buffer.subarray(4, 20).toString("hex") === "669f7efd7b6fe812278486085878563d";
+  const completeCorrect = buffer.toString("hex") === "05a9a844669f7efd7b6fe812278486085878563d";
 
   console.log(`  ✓ Length correct: ${lengthCorrect}`);
   console.log(`  ✓ Timestamp correct: ${timestampCorrect}`);
   console.log(`  ✓ Payload correct: ${payloadCorrect}`);
   console.log(`  ✓ Complete buffer correct: ${completeCorrect}`);
 
-  const allPassed =
-    lengthCorrect && timestampCorrect && payloadCorrect && completeCorrect;
-  console.log(
-    `  → Binary Format Test Result: ${allPassed ? "PASS" : "FAIL"}\n`
-  );
+  const allPassed = lengthCorrect && timestampCorrect && payloadCorrect && completeCorrect;
+  console.log(`  → Binary Format Test Result: ${allPassed ? "PASS" : "FAIL"}\n`);
 
   return allPassed;
 }
@@ -274,9 +259,7 @@ function compareBinaryFormat() {
 function main() {
   console.log("🔍 KSUID Implementation Comparison: Go vs TypeScript\n");
   console.log("This script verifies that the TypeScript @owpz/ksuid library");
-  console.log(
-    "generates identical results to the Go segmentio/ksuid library.\n"
-  );
+  console.log("generates identical results to the Go segmentio/ksuid library.\n");
 
   const results = [
     compareBasicGeneration(),
@@ -286,7 +269,7 @@ function main() {
     compareBinaryFormat(),
   ];
 
-  const allTestsPassed = results.every(result => result);
+  const allTestsPassed = results.every(Boolean);
 
   console.log("=== FINAL RESULTS ===");
   console.log(`Basic Generation: ${results[0] ? "PASS" : "FAIL"}`);
@@ -294,23 +277,17 @@ function main() {
   console.log(`Timestamp Conversion: ${results[2] ? "PASS" : "FAIL"}`);
   console.log(`Sequence Generation: ${results[3] ? "PASS" : "FAIL"}`);
   console.log(`Binary Format: ${results[4] ? "PASS" : "FAIL"}`);
-  console.log(
-    `\n🎯 Overall Result: ${allTestsPassed ? "ALL TESTS PASS" : "SOME TESTS FAILED"}`
-  );
+  console.log(`\n🎯 Overall Result: ${allTestsPassed ? "ALL TESTS PASS" : "SOME TESTS FAILED"}`);
 
   if (allTestsPassed) {
-    console.log(
-      "\n✅ The TypeScript implementation is fully compatible with the Go implementation!"
-    );
+    console.log("\n✅ The TypeScript implementation is fully compatible with the Go implementation!");
     console.log("   - Timestamps match exactly");
     console.log("   - String representations are identical");
     console.log("   - Binary formats are byte-for-byte identical");
     console.log("   - Next/prev operations behave identically");
     console.log("   - All edge cases handled correctly");
   } else {
-    console.log(
-      "\n❌ There are compatibility issues that need to be addressed."
-    );
+    console.log("\n❌ There are compatibility issues that need to be addressed.");
   }
 
   process.exit(allTestsPassed ? 0 : 1);
