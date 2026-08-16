@@ -7,6 +7,10 @@ jobs:
   publish:
     name: Publish to npm
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # required for npm trusted publishing (OIDC)
+      id-token: write
     steps:
       - uses: actions/checkout@v7
       # Verify version matches between tag and package.json
@@ -57,6 +61,8 @@ jobs:
             exit 1
           fi
           echo "✓ Build output verification successful"
-      # Publish to npm
+      # Publish to npm via trusted publishing (OIDC) — no token needed.
+      # --no-git-checks: tag pushes check out a detached HEAD, which pnpm's
+      # branch check would otherwise reject.
       - name: Publish package to npm
-        run: pnpm publish --access public
+        run: pnpm publish --access public --no-git-checks
