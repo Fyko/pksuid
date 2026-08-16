@@ -52,6 +52,7 @@
     "base-x": "^5.0.1"
   },
   "devDependencies": {
+    "@oxlint/plugins": "1.78.0",
     "@types/node": "^26.2.0",
     "eslint-config-neon": "^0.5.4",
     "oxfmt": "^0.63.0",
