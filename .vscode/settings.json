@@ -1,0 +1,43 @@
+{
+	"eslint.enable": false,
+	"eslint.validate": [
+		"javascript",
+		"javascriptreact",
+		"typescript",
+		"typescriptreact"
+	],
+	"eslint.useESLintClass": true,
+	"eslint.useFlatConfig": true,
+	"oxc.requireConfig": true,
+	"oxc.typeAware": true,
+	"editor.defaultFormatter": "oxc.oxc-vscode",
+	"editor.formatOnSave": true,
+	"editor.codeActionsOnSave": {
+		"source.organizeImports": "never",
+		"source.fixAll.eslint": "always",
+		"source.fixAll.oxc": "always",
+		"source.fixAll": "always"
+	},
+	"editor.trimAutoWhitespace": false,
+	"files.associations": {
+		"tsconfig.json": "jsonc",
+		"tsconfig.eslint.json": "jsonc"
+	},
+	"files.insertFinalNewline": true,
+	"files.eol": "\n",
+	"search.exclude": {
+		"**/dist": true,
+		"**/coverage": true,
+		"**/test-results": true
+	},
+	"search.followSymlinks": false,
+	"search.useParentIgnoreFiles": true,
+	"files.watcherExclude": {
+		"**/coverage/*/**": true,
+		"**/dist/*/**": true,
+		"**/test-results/*/**": true
+	},
+	"js/ts.tsdk.path": "node_modules/typescript/lib",
+	"js/ts.tsdk.promptToUseWorkspaceVersion": true,
+	"npm.packageManager": "pnpm"
+}
