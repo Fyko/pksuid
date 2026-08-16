@@ -1,5 +1,11 @@
 # pksuid
 
+[![npm](https://img.shields.io/npm/v/pksuid)](https://www.npmjs.com/package/pksuid)
+[![CI](https://github.com/Fyko/pksuid/actions/workflows/ci.yml/badge.svg)](https://github.com/Fyko/pksuid/actions/workflows/ci.yml)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/Fyko/pksuid/badge)](https://scorecard.dev/viewer/?uri=github.com/Fyko/pksuid)
+[![license](https://img.shields.io/npm/l/pksuid)](./LICENSE)
+[![dependencies](https://img.shields.io/badge/dependencies-0-brightgreen)](https://www.npmjs.com/package/pksuid?activeTab=dependencies)
+
 Stripe-style prefixed, k-sortable, strictly-typed ids for TypeScript.
 
 ```ts

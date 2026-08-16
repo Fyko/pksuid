@@ -3,16 +3,24 @@ on:
   push:
     tags:
       - "v*.*.*"
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   publish:
     name: Publish to npm
     runs-on: ubuntu-latest
     permissions:
-      contents: read
-      # required for npm trusted publishing (OIDC)
-      id-token: write
+      contents: read # to check out the repository
+      id-token: write # to mint the OIDC token for npm trusted publishing
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       # Verify version matches between tag and package.json
       - name: Verify version
         run: |
@@ -34,17 +42,23 @@ jobs:
           else
             echo "✓ Version match confirmed: $TAG_VERSION"
           fi
-      # Setup Node.js environment
-      # Using SHA pin instead of version tag for security (prevents unexpected changes if the tag is moved)
-      - uses: pnpm/action-setup@v6
+      # Setup Node.js environment. Actions are pinned to commit SHAs (the
+      # trailing comment records the release the SHA came from) so a moved
+      # tag can't swap the code out from under us.
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
       - name: Setup Node.js
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 24
           # no registry-url: it writes an _authToken placeholder to .npmrc,
           # which preempts the OIDC trusted-publishing flow (npm sends the
           # bogus token and the registry 404s the PUT)
-          cache: pnpm
+          #
+          # caching is off (setup-node turns it on by default whenever
+          # package.json has a packageManager field): a dependency cache
+          # restored into a release job is a poisoning path into the published
+          # tarball, and this job runs a handful of times a year
+          package-manager-cache: false
       # Install dependencies
       - name: Install dependencies
         run: pnpm install --frozen-lockfile

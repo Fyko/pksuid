@@ -1,0 +1,17 @@
+version: 2
+updates:
+  # dev deps still run arbitrary code on install/build — where supply-chain hits land
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+
+  # keeps sha-pinned actions bumped (dependabot updates the pin + version comment)
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
