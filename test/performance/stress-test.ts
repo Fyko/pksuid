@@ -7,8 +7,9 @@
  * production readiness claims.
  */
 
-import { KSUID, Sequence } from "../../src/index";
-import { performance } from "perf_hooks";
+import { KSUID, Sequence } from "../../src/index.ts";
+import { performance } from "node:perf_hooks";
+import { writeFileSync } from "node:fs";
 
 interface StressTestResult {
   testName: string;
@@ -336,7 +337,7 @@ async function runStressTests(): Promise<void> {
       null,
       2
     );
-    require("fs").writeFileSync("stress-test-results.json", resultsJson);
+    writeFileSync("stress-test-results.json", resultsJson);
     console.log("📊 Stress test results exported to stress-test-results.json");
   }
 
@@ -349,7 +350,7 @@ async function runStressTests(): Promise<void> {
 }
 
 // Run stress tests
-if (require.main === module) {
+if (import.meta.main) {
   runStressTests().catch(console.error);
 }
 

@@ -17,11 +17,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: pnpm/action-setup@v4
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: "npm"
+          node-version: 24
+          cache: pnpm
 
       - name: Setup Go (no caching)
         uses: actions/setup-go@v5
@@ -30,10 +31,10 @@ jobs:
           cache: false
 
       - name: Install Node.js dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Build TypeScript
-        run: npm run build
+        run: pnpm run build
 
       - name: Initialize Go modules and build tools
         run: |
@@ -49,7 +50,7 @@ jobs:
           ln -sf $(go env GOPATH)/bin/ksuid ./ksuid-go
 
       - name: Run Go compatibility tests
-        run: npm test -- test/integration/go-compatibility.test.ts test/integration/go-interop.test.ts
+        run: pnpm test -- test/integration/go-compatibility.test.ts test/integration/go-interop.test.ts
 
       - name: Generate fresh test vectors
         run: |

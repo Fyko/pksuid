@@ -7,7 +7,7 @@
  * Full benchmarks are too resource-intensive for CI.
  */
 
-import { KSUID } from "../../src/index";
+import { KSUID } from "../../src/index.ts";
 import { performance } from "perf_hooks";
 
 interface RegressionTest {
@@ -125,7 +125,7 @@ async function main(): Promise<void> {
   console.log("\n✨ Regression testing complete!");
 }
 
-if (require.main === module) {
+if (import.meta.main) {
   main().catch(console.error);
 }
 

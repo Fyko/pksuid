@@ -1,6 +1,6 @@
 import { test } from "uvu";
 import * as assert from "uvu/assert";
-import { Uint128 } from "../../src/uint128";
+import { Uint128 } from "../../src/uint128.ts";
 import { Buffer } from "buffer";
 
 test("Uint128 zero constant", () => {

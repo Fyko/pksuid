@@ -1,5 +1,5 @@
 import { Buffer } from "buffer";
-import { KSUIDError } from "./errors";
+import { KSUIDError } from "./errors.ts";
 
 const BASE62_ALPHABET =
   "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";

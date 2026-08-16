@@ -1,6 +1,6 @@
-#!/usr/bin/env ts-node
+#!/usr/bin/env node
 
-import { KSUID } from "../src/ksuid";
+import { KSUID } from "../src/ksuid.ts";
 import { Buffer } from "buffer";
 
 /**
@@ -316,6 +316,6 @@ function main() {
   process.exit(allTestsPassed ? 0 : 1);
 }
 
-if (require.main === module) {
+if (import.meta.main) {
   main();
 }

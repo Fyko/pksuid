@@ -32,18 +32,19 @@ jobs:
           fi
       # Setup Node.js environment
       # Using SHA pin instead of version tag for security (prevents unexpected changes if the tag is moved)
+      - uses: pnpm/action-setup@v4
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
           registry-url: https://registry.npmjs.org/
-          cache: "npm"
+          cache: pnpm
       # Install dependencies
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
       # Run prepublishOnly script (clean, build, test)
       - name: Prepare package
-        run: npm run prepublishOnly
+        run: pnpm run prepublishOnly
       # Verify build output exists
       - name: Verify build output
         run: |
@@ -58,6 +59,4 @@ jobs:
           echo "✓ Build output verification successful"
       # Publish to npm
       - name: Publish package to npm
-        run: npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: pnpm publish --access public

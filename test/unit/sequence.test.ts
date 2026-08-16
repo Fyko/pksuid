@@ -1,7 +1,7 @@
 import { test } from "uvu";
 import * as assert from "uvu/assert";
-import { Sequence } from "../../src/sequence";
-import { KSUID } from "../../src/ksuid";
+import { Sequence } from "../../src/sequence.ts";
+import { KSUID } from "../../src/ksuid.ts";
 import { Buffer } from "buffer";
 
 test("Sequence basic functionality", () => {

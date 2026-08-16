@@ -8,8 +8,8 @@
  * change requiring a major version bump.
  */
 
-const { spawn } = require("child_process");
-const path = require("path");
+import { spawn } from "node:child_process";
+import path from "node:path";
 
 const tests = [
   {
@@ -60,12 +60,12 @@ async function runTest(test) {
       return;
     }
 
-    const testPath = path.join(__dirname, test.file);
+    const testPath = path.join(import.meta.dirname, test.file);
 
     console.log(`\n🔍 Running ${test.name}...`);
     console.log(`   ${test.description}`);
 
-    const child = spawn("node", ["-r", "ts-node/register", testPath], {
+    const child = spawn("node", [testPath], {
       stdio: "pipe",
       cwd: process.cwd(),
     });
@@ -199,11 +199,11 @@ async function main() {
   }
 }
 
-if (require.main === module) {
+if (import.meta.main) {
   main().catch(error => {
     console.error("❌ Contract test runner failed:", error);
     process.exit(1);
   });
 }
 
-module.exports = { runTest, main };
+export { runTest, main };

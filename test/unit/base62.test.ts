@@ -1,6 +1,6 @@
 import { test } from "uvu";
 import * as assert from "uvu/assert";
-import { Base62 } from "../../src/base62";
+import { Base62 } from "../../src/base62.ts";
 import { Buffer } from "buffer";
 
 test("Base62 round-trip for all-zero buffer", () => {

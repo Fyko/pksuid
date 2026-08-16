@@ -44,8 +44,8 @@ class PerformanceComparison {
       process.exit(1);
     }
 
-    const perfDir = __dirname;
-    const rootDir = join(__dirname, "../../");
+    const perfDir = import.meta.dirname;
+    const rootDir = join(import.meta.dirname, "../../");
 
     console.log("📊 Step 1: Running TypeScript benchmark...");
 
@@ -333,7 +333,7 @@ class PerformanceComparison {
 }
 
 // Run comparison
-if (require.main === module) {
+if (import.meta.main) {
   const comparison = new PerformanceComparison();
   comparison.runComparison().catch(console.error);
 }

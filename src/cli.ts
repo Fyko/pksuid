@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-import { KSUID } from "./ksuid";
-import { isKSUIDError } from "./errors";
+import { KSUID } from "./ksuid.ts";
+import { isKSUIDError } from "./errors.ts";
 
 interface CLIArgs {
   count: number;
@@ -212,6 +212,6 @@ function main(): void {
 }
 
 // Only run main if this file is executed directly
-if (require.main === module) {
+if (import.meta.main) {
   main();
 }

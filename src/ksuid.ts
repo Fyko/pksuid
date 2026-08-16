@@ -1,8 +1,8 @@
 import { Buffer } from "buffer";
 import * as crypto from "crypto";
-import { Base62 } from "./base62";
-import { Uint128 } from "./uint128";
-import { KSUIDError } from "./errors";
+import { Base62 } from "./base62.ts";
+import { Uint128 } from "./uint128.ts";
+import { KSUIDError } from "./errors.ts";
 
 const EPOCH = 1400000000; // 2014-05-13T16:53:20Z
 const TIMESTAMP_LENGTH = 4;
@@ -10,7 +10,10 @@ const PAYLOAD_LENGTH = 16;
 const KSUID_LENGTH = TIMESTAMP_LENGTH + PAYLOAD_LENGTH;
 
 export class KSUID {
-  private constructor(private readonly buffer: Buffer) {
+  private readonly buffer: Buffer;
+
+  private constructor(buffer: Buffer) {
+    this.buffer = buffer;
     if (buffer.length !== KSUID_LENGTH) {
       throw KSUIDError.invalidBufferLength(buffer, KSUID_LENGTH, "KSUID");
     }

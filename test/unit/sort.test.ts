@@ -1,7 +1,7 @@
 import { test } from "uvu";
 import * as assert from "uvu/assert";
-import { sort, isSorted, compare } from "../../src/sort";
-import { KSUID } from "../../src/ksuid";
+import { sort, isSorted, compare } from "../../src/sort.ts";
+import { KSUID } from "../../src/ksuid.ts";
 import { Buffer } from "buffer";
 
 test("sort() empty array", () => {

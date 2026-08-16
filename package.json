@@ -9,24 +9,24 @@
   },
   "scripts": {
     "build": "tsc",
-    "test": "uvu -r ts-node/register test",
-    "test:unit": "uvu -r ts-node/register test/unit",
-    "test:integration": "uvu -r ts-node/register test/integration",
+    "test": "uvu test",
+    "test:unit": "uvu test/unit",
+    "test:integration": "uvu test/integration",
     "test:contract": "node test/api-contract/run-all-contract-tests.js",
     "check-contract": "node scripts/check-api-contract.js",
-    "benchmark": "ts-node test/performance/benchmark.ts",
-    "stress-test": "ts-node test/performance/stress-test.ts",
-    "perf": "npm run benchmark && npm run stress-test",
-    "perf:regression": "ts-node test/performance/regression.ts",
-    "perf:compare": "ts-node test/performance/compare.ts",
-    "prepublishOnly": "npm run build",
-    "cli": "ts-node src/cli.ts",
+    "benchmark": "node test/performance/benchmark.ts",
+    "stress-test": "node test/performance/stress-test.ts",
+    "perf": "pnpm run benchmark && pnpm run stress-test",
+    "perf:regression": "node test/performance/regression.ts",
+    "perf:compare": "node test/performance/compare.ts",
+    "prepublishOnly": "pnpm run build",
+    "cli": "node src/cli.ts",
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "type-check": "tsc --noEmit",
-    "quality": "npm run format:check && npm run lint && npm run type-check"
+    "quality": "pnpm run format:check && pnpm run lint && pnpm run type-check"
   },
   "keywords": [
     "ksuid",
@@ -38,30 +38,30 @@
   ],
   "author": "Apex Innovations, Inc.",
   "license": "MIT",
-  "type": "commonjs",
+  "type": "module",
   "files": [
     "dist/",
     "README.md",
     "LICENSE"
   ],
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=24.0.0"
   },
+  "packageManager": "pnpm@10.33.0",
   "dependencies": {
-    "base-x": "^5.0.0"
+    "base-x": "^5.0.1"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@types/eslint": "^9.6.1",
-    "@types/node": "^24.0.15",
-    "@typescript-eslint/eslint-plugin": "^8.56.1",
-    "@typescript-eslint/parser": "^8.56.1",
-    "eslint": "^10.0.1",
+    "@types/node": "^26.2.0",
+    "@typescript-eslint/eslint-plugin": "^8.67.0",
+    "@typescript-eslint/parser": "^8.67.0",
+    "eslint": "^10.8.1",
     "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-prettier": "^5.5.5",
-    "prettier": "^3.6.2",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.8.3",
+    "eslint-plugin-prettier": "^5.5.6",
+    "prettier": "^3.9.6",
+    "typescript": "^7.0.2",
     "uvu": "^0.5.6"
   },
   "publishConfig": {

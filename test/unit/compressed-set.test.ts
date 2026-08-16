@@ -1,7 +1,7 @@
 import { test } from "uvu";
 import * as assert from "uvu/assert";
-import { CompressedSet } from "../../src/compressed-set";
-import { KSUID } from "../../src/ksuid";
+import { CompressedSet } from "../../src/compressed-set.ts";
+import { KSUID } from "../../src/ksuid.ts";
 import { Buffer } from "buffer";
 
 test("CompressedSet empty set", () => {

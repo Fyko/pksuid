@@ -1,4 +1,4 @@
-import { KSUID } from "./ksuid";
+import { KSUID } from "./ksuid.ts";
 
 /**
  * Sorts the given array of KSUIDs in ascending order (in place).

@@ -1,9 +1,9 @@
 import { test } from "uvu";
 import * as assert from "uvu/assert";
-import { KSUID } from "../../src/ksuid";
-import { Sequence } from "../../src/sequence";
-import { CompressedSet } from "../../src/compressed-set";
-import { sort } from "../../src/sort";
+import { KSUID } from "../../src/ksuid.ts";
+import { Sequence } from "../../src/sequence.ts";
+import { CompressedSet } from "../../src/compressed-set.ts";
+import { sort } from "../../src/sort.ts";
 import { Buffer } from "buffer";
 
 /**

@@ -1,5 +1,5 @@
 import { Buffer } from "buffer";
-import { KSUIDError } from "./errors";
+import { KSUIDError } from "./errors.ts";
 
 const U64_MAX = 0xffffffffffffffffn;
 

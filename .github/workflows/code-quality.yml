@@ -15,17 +15,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - uses: pnpm/action-setup@v4
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20.x"
-          cache: "npm"
+          node-version: "24.x"
+          cache: pnpm
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Check Prettier formatting
-        run: npm run format:check
+        run: pnpm run format:check
 
       - name: Format check results
         if: failure()
@@ -37,7 +38,7 @@ jobs:
           echo "### How to fix:" >> $GITHUB_STEP_SUMMARY
           echo "Run the following command locally:" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
-          echo "npm run format" >> $GITHUB_STEP_SUMMARY
+          echo "pnpm run format" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "Then commit the formatted changes." >> $GITHUB_STEP_SUMMARY
@@ -50,17 +51,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - uses: pnpm/action-setup@v4
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20.x"
-          cache: "npm"
+          node-version: "24.x"
+          cache: pnpm
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Run ESLint
-        run: npm run lint
+        run: pnpm run lint
         continue-on-error: true
         id: eslint
 
@@ -74,13 +76,13 @@ jobs:
           echo "### How to fix:" >> $GITHUB_STEP_SUMMARY
           echo "1. **Auto-fix what you can:**" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
-          echo "npm run lint:fix" >> $GITHUB_STEP_SUMMARY
+          echo "pnpm run lint:fix" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "2. **Review remaining issues manually**" >> $GITHUB_STEP_SUMMARY
           echo "3. **Run full quality check:**" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
-          echo "npm run quality" >> $GITHUB_STEP_SUMMARY
+          echo "pnpm run quality" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
 
       - name: ESLint Success
@@ -98,17 +100,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - uses: pnpm/action-setup@v4
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20.x"
-          cache: "npm"
+          node-version: "24.x"
+          cache: pnpm
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Run TypeScript type checking
-        run: npm run type-check
+        run: pnpm run type-check
 
       - name: Type check results
         if: failure()
@@ -120,7 +123,7 @@ jobs:
           echo "### How to fix:" >> $GITHUB_STEP_SUMMARY
           echo "1. Review the type errors above" >> $GITHUB_STEP_SUMMARY
           echo "2. Fix type issues in the code" >> $GITHUB_STEP_SUMMARY
-          echo "3. Verify with: \`npm run type-check\`" >> $GITHUB_STEP_SUMMARY
+          echo "3. Verify with: \`pnpm run type-check\`" >> $GITHUB_STEP_SUMMARY
 
   dependency-audit:
     runs-on: ubuntu-latest
@@ -130,14 +133,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - uses: pnpm/action-setup@v4
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20.x"
-          cache: "npm"
+          node-version: "24.x"
+          cache: pnpm
 
       - name: Run security audit
-        run: npm audit --audit-level=moderate
+        run: pnpm audit --audit-level=moderate
         continue-on-error: true
         id: audit
 
@@ -146,18 +150,18 @@ jobs:
         run: |
           echo "## 🔒 Security Vulnerabilities Found" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "npm audit found security vulnerabilities in dependencies." >> $GITHUB_STEP_SUMMARY
+          echo "pnpm audit found security vulnerabilities in dependencies." >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### How to fix:" >> $GITHUB_STEP_SUMMARY
           echo "1. **Auto-fix vulnerabilities:**" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
-          echo "npm audit fix" >> $GITHUB_STEP_SUMMARY
+          echo "pnpm audit fix" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "2. **For high/critical issues that can't be auto-fixed:**" >> $GITHUB_STEP_SUMMARY
           echo "   - Review each vulnerability manually" >> $GITHUB_STEP_SUMMARY
           echo "   - Update dependencies or find alternatives" >> $GITHUB_STEP_SUMMARY
-          echo "   - Consider using \`npm audit fix --force\` as last resort" >> $GITHUB_STEP_SUMMARY
+          echo "   - Consider using \`pnpm audit fix --force\` as last resort" >> $GITHUB_STEP_SUMMARY
 
       - name: Audit success
         if: success()
@@ -174,17 +178,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - uses: pnpm/action-setup@v4
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20.x"
-          cache: "npm"
+          node-version: "24.x"
+          cache: pnpm
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Build project
-        run: npm run build
+        run: pnpm run build
 
       - name: Verify build outputs
         run: |
@@ -242,13 +247,13 @@ jobs:
           if [ "${{ needs.formatting.result }}" = "success" ]; then
             echo "✅ **Formatting**: All files properly formatted" >> $GITHUB_STEP_SUMMARY
           else
-            echo "❌ **Formatting**: Issues found - run \`npm run format\`" >> $GITHUB_STEP_SUMMARY
+            echo "❌ **Formatting**: Issues found - run \`pnpm run format\`" >> $GITHUB_STEP_SUMMARY
           fi
 
           if [ "${{ needs.linting.result }}" = "success" ]; then
             echo "✅ **Linting**: No ESLint issues" >> $GITHUB_STEP_SUMMARY
           else
-            echo "⚠️ **Linting**: Issues found - run \`npm run lint:fix\`" >> $GITHUB_STEP_SUMMARY
+            echo "⚠️ **Linting**: Issues found - run \`pnpm run lint:fix\`" >> $GITHUB_STEP_SUMMARY
           fi
 
           if [ "${{ needs.type-checking.result }}" = "success" ]; then
@@ -260,7 +265,7 @@ jobs:
           if [ "${{ needs.dependency-audit.result }}" = "success" ]; then
             echo "✅ **Security**: No vulnerabilities found" >> $GITHUB_STEP_SUMMARY
           else
-            echo "🔒 **Security**: Vulnerabilities found - run \`npm audit fix\`" >> $GITHUB_STEP_SUMMARY
+            echo "🔒 **Security**: Vulnerabilities found - run \`pnpm audit fix\`" >> $GITHUB_STEP_SUMMARY
           fi
 
           if [ "${{ needs.build-test.result }}" = "success" ]; then
@@ -273,10 +278,10 @@ jobs:
           echo "### Quick Fix Commands" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
           echo "# Fix most issues automatically:" >> $GITHUB_STEP_SUMMARY
-          echo "npm run format && npm run lint:fix" >> $GITHUB_STEP_SUMMARY
+          echo "pnpm run format && pnpm run lint:fix" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "# Run full quality check:" >> $GITHUB_STEP_SUMMARY
-          echo "npm run quality" >> $GITHUB_STEP_SUMMARY
+          echo "pnpm run quality" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
 
       - name: Set overall result

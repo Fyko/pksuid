@@ -1,4 +1,4 @@
-import { KSUID } from "./ksuid";
+import { KSUID } from "./ksuid.ts";
 import { Buffer } from "buffer";
 
 /**

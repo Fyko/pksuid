@@ -25,14 +25,10 @@ interface CLIResult {
 
 async function runCLI(args: string[]): Promise<CLIResult> {
   return new Promise((resolve, reject) => {
-    const child = spawn(
-      "node",
-      ["-r", "ts-node/register", "src/cli.ts", ...args],
-      {
-        stdio: "pipe",
-        cwd: process.cwd(),
-      }
-    );
+    const child = spawn("node", ["src/cli.ts", ...args], {
+      stdio: "pipe",
+      cwd: process.cwd(),
+    });
 
     let stdout = "";
     let stderr = "";

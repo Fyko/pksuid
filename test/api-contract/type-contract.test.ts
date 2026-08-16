@@ -14,7 +14,7 @@ import * as assert from "uvu/assert";
  */
 
 // Import all types and verify they exist
-import type { KSUIDErrorCode } from "../../src/index";
+import type { KSUIDErrorCode } from "../../src/index.ts";
 
 import {
   KSUID,
@@ -29,7 +29,7 @@ import {
   sort,
   isSorted,
   compare,
-} from "../../src/index";
+} from "../../src/index.ts";
 
 import { Buffer } from "buffer";
 

@@ -1,6 +1,6 @@
 import { test } from "uvu";
 import * as assert from "uvu/assert";
-import { KSUID } from "../../src/ksuid";
+import { KSUID } from "../../src/ksuid.ts";
 import { Buffer } from "buffer";
 
 const EPOCH = 1400000000;

@@ -13,8 +13,8 @@ import {
   sort,
   isSorted,
   compare,
-} from "../../src/index";
-import type { KSUIDErrorCode } from "../../src/index";
+} from "../../src/index.ts";
+import type { KSUIDErrorCode } from "../../src/index.ts";
 import { Buffer } from "buffer";
 
 /**

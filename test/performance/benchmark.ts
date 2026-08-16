@@ -7,8 +7,9 @@
  * Go implementation claims to validate performance assertions.
  */
 
-import { performance } from "perf_hooks";
-import { KSUID, Sequence, sort, compare } from "../../src/index";
+import { performance } from "node:perf_hooks";
+import { writeFileSync } from "node:fs";
+import { KSUID, Sequence, sort, compare } from "../../src/index.ts";
 
 interface BenchmarkResult {
   operation: string;
@@ -273,7 +274,7 @@ async function runBenchmarks(): Promise<void> {
   // Export results for CI
   if (process.env.CI) {
     const resultsJson = JSON.stringify(results, null, 2);
-    require("fs").writeFileSync("benchmark-results.json", resultsJson);
+    writeFileSync("benchmark-results.json", resultsJson);
     console.log("📊 Results exported to benchmark-results.json");
   }
 
@@ -281,7 +282,7 @@ async function runBenchmarks(): Promise<void> {
 }
 
 // Run benchmarks
-if (require.main === module) {
+if (import.meta.main) {
   runBenchmarks().catch(console.error);
 }
 

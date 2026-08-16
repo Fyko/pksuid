@@ -59,16 +59,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: pnpm/action-setup@v4
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: "npm"
+          node-version: 24
+          cache: pnpm
 
       - name: Check for outdated dependencies
         run: |
-          npm ci
-          npm outdated --json > outdated.json || true
+          pnpm install --frozen-lockfile
+          pnpm outdated --json > outdated.json || true
 
           if [ -s outdated.json ]; then
             echo "::warning::Outdated dependencies found:"

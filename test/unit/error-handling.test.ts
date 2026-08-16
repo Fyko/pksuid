@@ -1,9 +1,9 @@
 import { test } from "uvu";
 import * as assert from "uvu/assert";
-import { KSUID } from "../../src/ksuid";
-import { Base62 } from "../../src/base62";
-import { Sequence } from "../../src/sequence";
-import { CompressedSet } from "../../src/compressed-set";
+import { KSUID } from "../../src/ksuid.ts";
+import { Base62 } from "../../src/base62.ts";
+import { Sequence } from "../../src/sequence.ts";
+import { CompressedSet } from "../../src/compressed-set.ts";
 import { Buffer } from "buffer";
 
 test("KSUID error message consistency", () => {

@@ -7,10 +7,10 @@
  * changes that might introduce breaking changes.
  */
 
-const { spawn } = require("child_process");
+import { spawn } from "node:child_process";
 
 // Whitelist of allowed commands to prevent command injection
-const ALLOWED_COMMANDS = new Set(["npm"]);
+const ALLOWED_COMMANDS = new Set(["pnpm"]);
 
 function runCommand(command, args = []) {
   // Validate command against whitelist
@@ -45,7 +45,7 @@ async function main() {
 
   try {
     console.log("📦 Building project...");
-    const buildCode = await runCommand("npm", ["run", "build"]);
+    const buildCode = await runCommand("pnpm", ["run", "build"]);
 
     if (buildCode !== 0) {
       console.error(
@@ -59,7 +59,7 @@ async function main() {
     console.log("🧪 Running API contract tests...");
     console.log("");
 
-    const contractCode = await runCommand("npm", ["run", "test:contract"]);
+    const contractCode = await runCommand("pnpm", ["run", "test:contract"]);
 
     if (contractCode === 0) {
       console.log("");
@@ -97,9 +97,9 @@ async function main() {
       console.log("   - Run this script again to verify");
       console.log("");
       console.log("💡 Tip: Run individual contract test suites:");
-      console.log("   - npm test test/api-contract/api-contract.test.ts");
-      console.log("   - npm test test/api-contract/cli-contract.test.ts");
-      console.log("   - npm test test/api-contract/type-contract.test.ts");
+      console.log("   - pnpm test test/api-contract/api-contract.test.ts");
+      console.log("   - pnpm test test/api-contract/cli-contract.test.ts");
+      console.log("   - pnpm test test/api-contract/type-contract.test.ts");
 
       process.exit(1);
     }
@@ -109,8 +109,8 @@ async function main() {
   }
 }
 
-if (require.main === module) {
+if (import.meta.main) {
   main().catch(console.error);
 }
 
-module.exports = { main };
+export { main };

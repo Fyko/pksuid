@@ -1,8 +1,8 @@
-import { KSUID } from "./ksuid";
-import { Uint128 } from "./uint128";
-import { sort, isSorted } from "./sort";
+import { KSUID } from "./ksuid.ts";
+import { Uint128 } from "./uint128.ts";
+import { sort, isSorted } from "./sort.ts";
 import { Buffer } from "buffer";
-import { KSUIDError } from "./errors";
+import { KSUIDError } from "./errors.ts";
 
 // Constants matching Go implementation
 const RAW_KSUID = 0;
@@ -15,7 +15,11 @@ const PAYLOAD_RANGE = (1 << 6) | (1 << 7);
  * using compression techniques to minimize memory usage.
  */
 export class CompressedSet {
-  private constructor(private readonly content: Buffer) {}
+  private readonly content: Buffer;
+
+  private constructor(content: Buffer) {
+    this.content = content;
+  }
 
   /**
    * Create a compressed set from an array of KSUIDs.
