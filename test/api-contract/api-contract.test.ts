@@ -172,8 +172,8 @@ test("Uint128 class API contract", () => {
   assert.ok(Buffer.isBuffer(uint128.bytes()));
   assert.ok(Buffer.isBuffer(uint128.toBuffer()));
   assert.ok(Buffer.isBuffer(uint128.ksuid(123_456)));
-  assert.ok(typeof uint128.getLow() === "bigint");
-  assert.ok(typeof uint128.getHigh() === "bigint");
+  assert.is(uint128.getLow().constructor, BigInt);
+  assert.is(uint128.getHigh().constructor, BigInt);
 
   // Buffer lengths are correct
   assert.is(uint128.bytes().length, 16);
@@ -469,6 +469,8 @@ test("Constants stability contract", () => {
   const originalCodes = { ...KSUID_ERROR_CODES };
   // Compare each property individually since object comparison might fail
   for (const [key, value] of Object.entries(originalCodes)) {
+    // SAFETY: `key` comes from Object.entries over a spread of
+    // KSUID_ERROR_CODES itself, so it is always one of its own keys.
     assert.is(KSUID_ERROR_CODES[key as keyof typeof KSUID_ERROR_CODES], value);
   }
 });

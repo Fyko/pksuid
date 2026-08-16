@@ -21,6 +21,20 @@ export const KSUID_ERROR_CODES = {
 export type KSUIDErrorCode = (typeof KSUID_ERROR_CODES)[keyof typeof KSUID_ERROR_CODES];
 
 /**
+ * A value rejected by a timestamp guard. Valid timestamps are uint32 numbers;
+ * the null/undefined arms exist because `KSUID.fromParts` also guards against
+ * the values untyped JavaScript callers can reach it with.
+ */
+export type RejectedTimestamp = number | null | undefined;
+
+/**
+ * A value rejected by a null/undefined guard, retained so the error message can
+ * describe what arrived. The library only guards inputs it declares as strings
+ * or buffers.
+ */
+export type RejectedInput = Buffer | string | null | undefined;
+
+/**
  * Custom error class for KSUID operations
  *
  * Provides structured error information for better error handling
@@ -113,8 +127,8 @@ export class KSUIDError extends Error {
   /**
    * Create an error for invalid timestamp
    */
-  public static invalidTimestamp(timestamp: unknown): KSUIDError {
-    const displayTimestamp = typeof timestamp === "number" ? timestamp.toString() : typeof timestamp;
+  public static invalidTimestamp(timestamp: RejectedTimestamp): KSUIDError {
+    const displayTimestamp = timestamp == null ? String(timestamp) : timestamp.toString();
 
     return new KSUIDError(
       `Invalid timestamp: must be uint32 (0 to 4294967295), got ${displayTimestamp}`,
@@ -130,7 +144,7 @@ export class KSUIDError extends Error {
   /**
    * Create an error for null/undefined input
    */
-  public static invalidInput(input: unknown, paramName: string): KSUIDError {
+  public static invalidInput(input: RejectedInput, paramName: string): KSUIDError {
     return new KSUIDError(`Invalid ${paramName}: cannot be null or undefined`, KSUID_ERROR_CODES.INVALID_INPUT, {
       input,
       expected: "non-null value",
@@ -152,6 +166,7 @@ export class KSUIDError extends Error {
 /**
  * Type guard to check if an error is a KSUIDError
  */
+// oxlint-disable-next-line anti-slop/no-unknown-parameters -- a type guard over caught values has to accept `unknown`; narrowing it is the function's job
 export function isKSUIDError(error: unknown): error is KSUIDError {
   return error instanceof KSUIDError;
 }

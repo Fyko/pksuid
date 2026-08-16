@@ -129,24 +129,24 @@ class PerformanceComparison {
   }
 
   private compareResults(goResults: BenchmarkResult[], tsResults: BenchmarkResult[]): void {
-    // Create operation mapping
-    const operationMap: { [key: string]: string } = {
-      "Random Generation": "Random Generation",
-      "String Parsing": "String Parsing",
-      "String Encoding": "String Encoding",
-      "Buffer Conversion": "Buffer Conversion",
-      "From Bytes": "From Bytes",
-      "Next Operation": "Next Operation",
-      "Prev Operation": "Prev Operation",
-      Comparison: "Comparison",
-      "Sorting (1K items)": "Sorting (1K items)",
-      "Timestamp Access": "Timestamp Access",
-      "Payload Access": "Payload Access",
-    };
+    // Operations both benchmark suites report under the same name
+    const comparableOperations = [
+      "Random Generation",
+      "String Parsing",
+      "String Encoding",
+      "Buffer Conversion",
+      "From Bytes",
+      "Next Operation",
+      "Prev Operation",
+      "Comparison",
+      "Sorting (1K items)",
+      "Timestamp Access",
+      "Payload Access",
+    ];
 
-    for (const [goOp, tsOp] of Object.entries(operationMap)) {
-      const goResult = goResults.find(r => r.operation === goOp);
-      const tsResult = tsResults.find(r => r.operation === tsOp);
+    for (const operation of comparableOperations) {
+      const goResult = goResults.find(r => r.operation === operation);
+      const tsResult = tsResults.find(r => r.operation === operation);
 
       if (goResult && tsResult) {
         const goFaster = goResult.opsPerSecond > tsResult.opsPerSecond;
@@ -155,7 +155,7 @@ class PerformanceComparison {
           : tsResult.opsPerSecond / goResult.opsPerSecond;
 
         this.results.push({
-          operation: goOp,
+          operation,
           goOpsPerSec: goResult.opsPerSecond,
           tsOpsPerSec: tsResult.opsPerSecond,
           goFaster,

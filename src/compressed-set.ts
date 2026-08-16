@@ -11,6 +11,16 @@ const PAYLOAD_DELTA = 1 << 7;
 const PAYLOAD_RANGE = (1 << 6) | (1 << 7);
 
 /**
+ * A run of consecutive KSUIDs found while scanning: `length` is how many
+ * sequential values the run spans, `count` how many ids were consumed to
+ * cover it (duplicates included).
+ */
+interface Range {
+  length: number;
+  count: number;
+}
+
+/**
  * CompressedSet is an immutable data type which stores a set of KSUIDs
  * using compression techniques to minimize memory usage.
  */
@@ -184,12 +194,7 @@ export class CompressedSet {
     return buffer.subarray(0, pos);
   }
 
-  private static rangeLength(
-    ids: KSUID[],
-    timestamp: number,
-    lastKSUID: KSUID,
-    lastValue: Uint128
-  ): { length: number; count: number } {
+  private static rangeLength(ids: KSUID[], timestamp: number, lastKSUID: KSUID, lastValue: Uint128): Range {
     const one = Uint128.one();
     let length = 0;
     let count = 0;

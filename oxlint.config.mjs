@@ -7,13 +7,7 @@ import typescript from "eslint-config-neon/oxlint/typescript";
 
 export default defineConfig({
   extends: [common, node, typescript, prettier],
-  ignorePatterns: [
-    "dist/**",
-    "coverage/**",
-    ".claude/**",
-    ".vscode/**",
-    "tools/oxlint/anti-slop/**",
-  ],
+  ignorePatterns: ["dist/**", "coverage/**", ".claude/**", ".vscode/**", "tools/oxlint/anti-slop/**"],
   jsPlugins: [{ name: "anti-slop", specifier: "./tools/oxlint/anti-slop/index.ts" }],
   rules: {
     "anti-slop/no-chained-type-assertions": "error",

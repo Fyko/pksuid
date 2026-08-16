@@ -14,7 +14,7 @@ import * as assert from "uvu/assert";
  */
 
 // Import all types and verify they exist
-import type { KSUIDErrorCode } from "../../src/index.ts";
+import type { KSUIDErrorCode, SequenceBounds, SequenceOptions } from "../../src/index.ts";
 
 import {
   KSUID,
@@ -136,18 +136,18 @@ test("Uint128 type signatures", () => {
   assert.ok(Buffer.isBuffer(bytes));
   assert.ok(Buffer.isBuffer(buffer));
   assert.ok(Buffer.isBuffer(ksuidBuffer));
-  assert.ok(typeof low === "bigint");
-  assert.ok(typeof high === "bigint");
+  assert.is(low.constructor, BigInt);
+  assert.is(high.constructor, BigInt);
 });
 
 test("Sequence type signatures", () => {
   // Constructor requires options with seed
-  const options: { seed: KSUID } = { seed: KSUID.random() };
+  const options: SequenceOptions = { seed: KSUID.random() };
   const sequence = new Sequence(options);
 
   // Methods
   const next: KSUID | null = sequence.next();
-  const bounds: { min: KSUID; max: KSUID } = sequence.bounds();
+  const bounds: SequenceBounds = sequence.bounds();
   const count: number = sequence.getCount();
   const exhausted: boolean = sequence.isExhausted();
   // oxlint-disable-next-line typescript/no-invalid-void-type, typescript/no-confusing-void-expression -- contract test asserts the declared void return type
@@ -230,10 +230,10 @@ test("KSUIDError type signatures", () => {
   assert.type(message, "string");
   assert.type(name, "string");
   assert.ok(input !== undefined);
-  assert.ok(expected === undefined || typeof expected === "string");
-  assert.ok(actual === undefined || typeof actual === "string");
+  if (expected !== undefined) assert.type(expected, "string");
+  if (actual !== undefined) assert.type(actual, "string");
   assert.ok(cause === undefined || cause instanceof Error);
-  assert.ok(stack === undefined || typeof stack === "string");
+  if (stack !== undefined) assert.type(stack, "string");
   assert.ok(stringLengthError instanceof KSUIDError);
   assert.ok(bufferLengthError instanceof KSUIDError);
   assert.ok(characterError instanceof KSUIDError);
@@ -267,6 +267,7 @@ test("Error codes type signatures", () => {
 
 test("Type guard signatures", () => {
   // isKSUIDError type guard
+  // oxlint-disable-next-line anti-slop/no-unknown-parameters -- asserting the published guard signature, which accepts `unknown` by contract
   const typeGuard: (error: unknown) => error is KSUIDError = isKSUIDError;
 
   const error = new KSUIDError("test", KSUID_ERROR_CODES.INVALID_LENGTH);
@@ -388,11 +389,11 @@ test("Interface compatibility", () => {
   // Test that objects can be used where interfaces are expected
 
   // Sequence constructor options
-  const options: { seed: KSUID } = { seed: KSUID.random() };
+  const options: SequenceOptions = { seed: KSUID.random() };
   const sequence = new Sequence(options);
 
   // Sequence bounds return type
-  const bounds: { min: KSUID; max: KSUID } = sequence.bounds();
+  const bounds: SequenceBounds = sequence.bounds();
 
   assert.ok(sequence instanceof Sequence);
   assert.ok(bounds.min instanceof KSUID);

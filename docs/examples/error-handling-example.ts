@@ -12,6 +12,27 @@ import { Buffer } from "node:buffer";
 
 import { type KSUIDError, KSUID, isKSUIDError, KSUID_ERROR_CODES, type KSUIDErrorCode } from "../../src/index.ts";
 
+/**
+ * The values a JavaScript caller can realistically hand to a parser: a string,
+ * or the null/undefined that slips through an untyped call site. The examples
+ * below use this instead of `string` so the runtime guards are what gets
+ * demonstrated, not the compile-time signature.
+ */
+type UntrustedInput = string | null | undefined;
+
+function parseUntrusted(input: UntrustedInput): KSUID {
+  // SAFETY: KSUID.parse guards `s == null` and throws KSUIDError before it
+  // performs any string operation, so a null/undefined value never reaches
+  // code that assumes a string.
+  return KSUID.parse(input as string);
+}
+
+function parseUntrustedOrNil(input: UntrustedInput): KSUID {
+  // SAFETY: KSUID.parseOrNil delegates to KSUID.parse, which guards
+  // `s == null` first, and returns the nil KSUID instead of throwing.
+  return KSUID.parseOrNil(input as string);
+}
+
 // Example 1: Basic error handling with type guards
 function demonstrateBasicErrorHandling() {
   console.log("=== Basic Error Handling ===");
@@ -25,7 +46,7 @@ function demonstrateBasicErrorHandling() {
 
   for (const input of invalidInputs) {
     try {
-      const ksuid = KSUID.parse(input as string);
+      const ksuid = parseUntrusted(input);
       console.log("✅ Parsed successfully:", ksuid.toString());
     } catch (error) {
       if (isKSUIDError(error)) {
@@ -40,13 +61,15 @@ function demonstrateBasicErrorHandling() {
 }
 
 // Example 2: Specific error code handling
-function handleSpecificErrors(input: string): {
+interface ParseOutcome {
   success: boolean;
   reason: string;
   data?: KSUID;
-} {
+}
+
+function handleSpecificErrors(input: UntrustedInput): ParseOutcome {
   try {
-    const ksuid = KSUID.parse(input);
+    const ksuid = parseUntrusted(input);
     return { success: true, reason: "success", data: ksuid };
   } catch (error) {
     if (!isKSUIDError(error)) {
@@ -91,7 +114,7 @@ function demonstrateSpecificErrorHandling() {
     "short",
     "!@#$%^&*()!@#$%^&*()!@#$%^&",
     "0o5sKzFDBc56T8mbUP8wH1KpSX7", // Valid KSUID
-    null as any,
+    null,
   ];
 
   for (const input of testCases) {
@@ -103,7 +126,7 @@ function demonstrateSpecificErrorHandling() {
 
 // Example 3: User-friendly error messages
 function getUserFriendlyMessage(error: KSUIDError): string {
-  const friendlyMessages: Record<KSUIDErrorCode, string> = {
+  const friendlyMessages = {
     [KSUID_ERROR_CODES.INVALID_LENGTH]: "The ID must be exactly 27 characters long.",
     [KSUID_ERROR_CODES.INVALID_CHARACTER]: "The ID contains invalid characters. Please use only letters and numbers.",
     [KSUID_ERROR_CODES.INVALID_BUFFER_SIZE]: "The data buffer has an incorrect size.",
@@ -113,7 +136,7 @@ function getUserFriendlyMessage(error: KSUIDError): string {
     [KSUID_ERROR_CODES.CORRUPTION_DETECTED]: "Data corruption was detected.",
     [KSUID_ERROR_CODES.SEQUENCE_EXHAUSTED]: "The sequence has reached its maximum capacity.",
     [KSUID_ERROR_CODES.OPERATION_FAILED]: "The operation could not be completed.",
-  };
+  } satisfies Record<KSUIDErrorCode, string>;
 
   return friendlyMessages[error.code] || "An unknown error occurred.";
 }
@@ -140,11 +163,11 @@ function demonstrateUserFriendlyErrors() {
 function demonstrateGracefulDegradation() {
   console.log("=== Graceful Degradation with OrNil Methods ===");
 
-  const inputs = ["invalid", "0o5sKzFDBc56T8mbUP8wH1KpSX7", null as any];
+  const inputs = ["invalid", "0o5sKzFDBc56T8mbUP8wH1KpSX7", null];
 
   for (const input of inputs) {
     // Using OrNil methods - never throws
-    const ksuid = KSUID.parseOrNil(input);
+    const ksuid = parseUntrustedOrNil(input);
 
     if (ksuid.isNil()) {
       console.log(`❌ Failed to parse "${String(input)}", using default behavior`);
