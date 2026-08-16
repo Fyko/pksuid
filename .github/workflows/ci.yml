@@ -2,21 +2,41 @@ name: CI
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main]
   pull_request:
-    branches: [main, develop]
+    branches: [main]
 
 jobs:
-  test:
+  checks:
+    name: Format, lint, type-check, build
     runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
 
+      - uses: pnpm/action-setup@v6
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run quality checks
+        run: pnpm run quality
+
+      - name: Build
+        run: pnpm run build
+
+  test:
+    name: Test (Node ${{ matrix.node-version }})
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [24.x]
-
+        node-version: [24.x, 26.x]
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v7
+      - uses: actions/checkout@v7
 
       - uses: pnpm/action-setup@v6
       - name: Setup Node.js ${{ matrix.node-version }}
@@ -28,39 +48,5 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Run linting
-        run: pnpm run lint
-
-      - name: Run type checking
-        run: pnpm run type-check
-
-      - name: Run unit tests
+      - name: Run tests
         run: pnpm test
-
-      - name: Run build
-        run: pnpm run build
-
-  # Separate job for comprehensive testing on main branch merges
-  full-test:
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    runs-on: ubuntu-latest
-    needs: [test]
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v7
-
-      - uses: pnpm/action-setup@v6
-      - name: Setup Node.js
-        uses: actions/setup-node@v7
-        with:
-          node-version: "24.x"
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Run comprehensive tests
-        run: |
-          pnpm run build
-          pnpm test
