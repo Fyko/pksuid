@@ -17,8 +17,6 @@ export class PksuidError extends Error {
     this.code = code;
 
     // Maintain stack trace (V8 only)
-    if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, PksuidError);
-    }
+    Error.captureStackTrace?.(this, PksuidError);
   }
 }

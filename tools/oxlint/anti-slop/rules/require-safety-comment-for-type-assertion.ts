@@ -26,7 +26,7 @@ function hasSafetyComment(sourceCode: SourceCode, node: TypeAssertion): boolean 
     if (
       sourceCode
         .getCommentsBefore(current)
-        .some((comment) => comment.end <= node.start && /\bSAFETY\s*:/u.test(comment.value))
+        .some(comment => comment.end <= node.start && /\bSAFETY\s*:/u.test(comment.value))
     ) {
       return true;
     }
@@ -40,8 +40,7 @@ export const requireSafetyCommentForTypeAssertionRule = defineRule({
   meta: {
     type: "problem",
     docs: {
-      description:
-        "Require a nearby SAFETY comment for every TypeScript type assertion except const assertions.",
+      description: "Require a nearby SAFETY comment for every TypeScript type assertion except const assertions.",
     },
     messages: {
       missingSafetyComment:

@@ -13,28 +13,5 @@
   "endOfLine": "lf",
   "embeddedLanguageFormatting": "auto",
   "sortPackageJson": false,
-  "ignorePatterns": [
-    "dist/",
-    "build/",
-    "coverage/",
-    "node_modules/",
-    "tools/oxlint/anti-slop/",
-    "package-lock.json",
-    "yarn.lock",
-    "pnpm-lock.yaml",
-    "*.d.ts.map",
-    "*.js.map",
-    "*.log",
-    "npm-debug.log*",
-    "yarn-debug.log*",
-    "yarn-error.log*",
-    ".vscode/",
-    ".idea/",
-    ".DS_Store",
-    "Thumbs.db",
-    "*.lcov",
-    "*.tmp",
-    "*.temp",
-    "docs/_build/"
-  ]
+  "ignorePatterns": ["dist/", "coverage/", "node_modules/", "pnpm-lock.yaml"]
 }

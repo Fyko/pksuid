@@ -35,7 +35,7 @@
     "LICENSE"
   ],
   "engines": {
-    "node": ">=24.0.0"
+    "node": ">=20.0.0"
   },
   "packageManager": "pnpm@10.33.0",
   "devDependencies": {
@@ -55,5 +55,19 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/fyko/pksuid.git"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "sideEffects": false,
+  "devEngines": {
+    "runtime": {
+      "name": "node",
+      "version": ">=24",
+      "onFail": "error"
+    }
   }
 }
