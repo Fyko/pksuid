@@ -41,6 +41,7 @@
     "@oxlint/plugins": "1.78.0",
     "@types/node": "^26.2.0",
     "eslint-config-neon": "^0.5.4",
+    "fast-check": "^4.9.0",
     "oxfmt": "^0.63.0",
     "oxlint": "^1.78.0",
     "oxlint-tsgolint": "^7.0.2001",
