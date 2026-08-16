@@ -1,71 +1,71 @@
 {
-  "name": "@owpz/ksuid",
-  "version": "25.7.20",
-  "description": "TypeScript implementation of KSUID with full feature parity to the Go version",
+  "name": "pksuid",
+  "version": "0.1.20",
+  "description": "Prefixed, k-sortable, strictly-typed ids in the style of Stripe object ids",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "bin": {
-    "ksuid": "dist/cli.js"
-  },
   "scripts": {
-    "build": "tsc",
-    "test": "uvu -r ts-node/register test",
-    "test:unit": "uvu -r ts-node/register test/unit",
-    "test:integration": "uvu -r ts-node/register test/integration",
-    "test:contract": "node test/api-contract/run-all-contract-tests.js",
-    "check-contract": "node scripts/check-api-contract.js",
-    "benchmark": "ts-node test/performance/benchmark.ts",
-    "stress-test": "ts-node test/performance/stress-test.ts",
-    "perf": "npm run benchmark && npm run stress-test",
-    "perf:regression": "ts-node test/performance/regression.ts",
-    "perf:compare": "ts-node test/performance/compare.ts",
-    "prepublishOnly": "npm run build",
-    "cli": "ts-node src/cli.ts",
-    "lint": "eslint . --max-warnings 0",
-    "lint:fix": "eslint . --fix",
-    "format": "prettier --write .",
-    "format:check": "prettier --check .",
+    "build": "tsc -p tsconfig.build.json",
+    "test": "node --test \"test/**/*.test.ts\"",
+    "prepublishOnly": "pnpm run build",
+    "lint": "oxlint -c oxlint.config.mjs",
+    "lint:fix": "oxlint -c oxlint.config.mjs --fix",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check",
     "type-check": "tsc --noEmit",
-    "quality": "npm run format:check && npm run lint && npm run type-check"
+    "quality": "pnpm run format:check && pnpm run lint && pnpm run type-check"
   },
   "keywords": [
     "ksuid",
+    "prefixed-id",
+    "stripe-id",
     "uuid",
     "identifier",
     "sortable",
     "timestamp",
     "unique"
   ],
-  "author": "Apex Innovations, Inc.",
+  "author": "Carter Himmel",
   "license": "MIT",
-  "type": "commonjs",
+  "type": "module",
   "files": [
     "dist/",
     "README.md",
     "LICENSE"
   ],
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=20.0.0"
   },
-  "dependencies": {
-    "base-x": "^5.0.0"
-  },
+  "packageManager": "pnpm@10.33.0",
   "devDependencies": {
-    "@eslint/js": "^10.0.1",
-    "@types/eslint": "^9.6.1",
-    "@types/node": "^24.0.15",
-    "@typescript-eslint/eslint-plugin": "^8.56.1",
-    "@typescript-eslint/parser": "^8.56.1",
-    "eslint": "^10.0.1",
-    "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-prettier": "^5.5.5",
-    "prettier": "^3.6.2",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.8.3",
-    "uvu": "^0.5.6"
+    "@oxlint/plugins": "1.78.0",
+    "@types/node": "^26.2.0",
+    "eslint-config-neon": "^0.5.4",
+    "oxfmt": "^0.63.0",
+    "oxlint": "^1.78.0",
+    "oxlint-tsgolint": "^7.0.2001",
+    "typescript": "^7.0.2"
   },
   "publishConfig": {
     "access": "public"
   },
-  "homepage": "https://github.com/owpz/ksuid"
+  "homepage": "https://github.com/fyko/pksuid",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fyko/pksuid.git"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "sideEffects": false,
+  "devEngines": {
+    "runtime": {
+      "name": "node",
+      "version": ">=24",
+      "onFail": "error"
+    }
+  }
 }
