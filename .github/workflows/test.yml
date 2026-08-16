@@ -38,11 +38,6 @@ jobs:
       - name: Run tests
         run: pnpm test
 
-      # Run performance regression tests (only on Node 20 to avoid matrix spam)
-      #      - name: Run performance regression tests
-      #        if: matrix.node-version == '20.x'
-      #        run: pnpm run perf:regression
-
       # Upload test coverage reports
       - name: Upload coverage reports
         uses: codecov/codecov-action@v7

@@ -1,88 +1,81 @@
-import { Buffer } from "node:buffer";
-import { KSUIDError } from "./errors.ts";
+import { PksuidError } from "./errors.ts";
 
 const BASE62_ALPHABET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-const BASE = BigInt(62);
+const BASE = 62n;
 const KSUID_BYTE_LENGTH = 20;
 const ENCODED_STRING_LENGTH = 27;
 
-// Pre-compute a map for character-to-value lookups for efficient decoding.
-const CHAR_MAP: Map<string, bigint> = new Map();
+const CHAR_VALUES = new Map<string, bigint>();
 for (let i = 0; i < BASE62_ALPHABET.length; i++) {
-  CHAR_MAP.set(BASE62_ALPHABET[i], BigInt(i));
+  CHAR_VALUES.set(BASE62_ALPHABET[i], BigInt(i));
 }
 
-export class Base62 {
-  /**
-   * Encodes a 20-byte buffer into a 27-character Base62 string.
-   * @param buffer The 20-byte buffer to encode.
-   * @returns The Base62 encoded string.
-   */
-  public static encode(buffer: Buffer): string {
-    if (buffer == null) {
-      throw KSUIDError.invalidInput(buffer, "buffer");
-    }
-
-    if (buffer.length !== KSUID_BYTE_LENGTH) {
-      throw KSUIDError.invalidBufferLength(buffer, KSUID_BYTE_LENGTH, "KSUID buffer");
-    }
-
-    // Convert the 20-byte buffer to a single large integer (BigInt).
-    let num = BigInt("0x" + buffer.toString("hex"));
-
-    // Handle the special case of a zero buffer (KSUID.nil).
-    if (num === 0n) {
-      return "0".repeat(ENCODED_STRING_LENGTH);
-    }
-
-    let encoded = "";
-    // Repeatedly take the number modulo 62 to get the character for each position.
-    while (num > 0n) {
-      const remainder = num % BASE;
-      num /= BASE;
-      encoded = BASE62_ALPHABET[Number(remainder)] + encoded;
-    }
-
-    // Pad the result with the zero-character ('0') to ensure a fixed length of 27.
-    return encoded.padStart(ENCODED_STRING_LENGTH, "0");
+/**
+ * Encodes a fixed 20-byte KSUID payload (4-byte big-endian timestamp + 16-byte
+ * random payload) into a fixed 27-character base62 string. The whole payload
+ * is treated as one 160-bit positional number and left-padded with zero
+ * digits, not with base-x's leading-zero-byte convention, which would make
+ * the width depend on how many leading 0x00 bytes the payload happens to
+ * have. Because every id of a given shape encodes to the same width, plain
+ * string comparison of two encoded ids matches the byte-order comparison of
+ * their payloads.
+ */
+export function encode(bytes: Uint8Array): string {
+  if (bytes.length !== KSUID_BYTE_LENGTH) {
+    throw new PksuidError(`invalid id: expected ${KSUID_BYTE_LENGTH} bytes, got ${bytes.length}`, "INVALID_ID");
   }
 
-  /**
-   * Decodes a Base62 string into a 20-byte buffer.
-   * @param str The Base62 string to decode.
-   * @returns A 20-byte buffer.
-   */
-  public static decode(str: string): Buffer {
-    if (str == null) {
-      throw KSUIDError.invalidInput(str, "string");
-    }
-
-    if (str.length !== ENCODED_STRING_LENGTH) {
-      throw KSUIDError.invalidStringLength(str, ENCODED_STRING_LENGTH);
-    }
-
-    let num = 0n;
-    // Iterate through the string to build up the BigInt value.
-    for (let i = 0; i < str.length; i++) {
-      const char = str[i];
-      const value = CHAR_MAP.get(char);
-      if (value === undefined) {
-        throw KSUIDError.invalidCharacter(char, i);
-      }
-      // This is the core of base conversion: num = (num * base) + digit_value
-      num = num * BASE + value;
-    }
-
-    // Convert the BigInt back to a hex string.
-    const hex = num.toString(16).padStart(KSUID_BYTE_LENGTH * 2, "0");
-
-    const decodedBuffer = Buffer.from(hex, "hex");
-
-    if (decodedBuffer.length > KSUID_BYTE_LENGTH) {
-      // This should be unreachable due to the padStart, but as a safeguard.
-      return decodedBuffer.subarray(decodedBuffer.length - KSUID_BYTE_LENGTH);
-    }
-
-    return decodedBuffer;
+  let value = 0n;
+  for (const byte of bytes) {
+    value = (value << 8n) | BigInt(byte);
   }
+
+  let encoded = "";
+  while (value > 0n) {
+    const remainder = value % BASE;
+    value /= BASE;
+    encoded = BASE62_ALPHABET[Number(remainder)] + encoded;
+  }
+
+  encoded = encoded.padStart(ENCODED_STRING_LENGTH, "0");
+  if (encoded.length > ENCODED_STRING_LENGTH) {
+    throw new PksuidError(`invalid id: encoded value exceeds ${ENCODED_STRING_LENGTH} characters`, "INVALID_ID");
+  }
+
+  return encoded;
+}
+
+/**
+ * Decodes a 27-character base62 string back into its 20-byte form,
+ * left-padding with zero bytes so the result is always fixed-width.
+ */
+export function decode(value: string): Uint8Array {
+  if (value.length !== ENCODED_STRING_LENGTH) {
+    throw new PksuidError(
+      `invalid id: expected ${ENCODED_STRING_LENGTH} characters, got ${value.length}`,
+      "INVALID_ID"
+    );
+  }
+
+  let num = 0n;
+  for (const char of value) {
+    const digit = CHAR_VALUES.get(char);
+    if (digit === undefined) {
+      throw new PksuidError(`invalid id: contains a non-base62 character "${char}"`, "INVALID_ID");
+    }
+
+    num = num * BASE + digit;
+  }
+
+  const bytes = new Uint8Array(KSUID_BYTE_LENGTH);
+  for (let i = KSUID_BYTE_LENGTH - 1; i >= 0 && num > 0n; i--) {
+    bytes[i] = Number(num & 0xffn);
+    num >>= 8n;
+  }
+
+  if (num > 0n) {
+    throw new PksuidError(`invalid id: decoded value exceeds ${KSUID_BYTE_LENGTH} bytes`, "INVALID_ID");
+  }
+
+  return bytes;
 }

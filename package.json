@@ -1,26 +1,14 @@
 {
-  "name": "@fyko/pksuid",
+  "name": "pksuid",
   "version": "0.1.20",
-  "description": "KSUIDs with prefixes like Stripe",
+  "description": "Prefixed, k-sortable, strictly-typed ids in the style of Stripe object ids",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "bin": {
-    "ksuid": "dist/cli.js"
-  },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "test": "uvu test",
     "test:unit": "uvu test/unit",
-    "test:integration": "uvu test/integration",
-    "test:contract": "node test/api-contract/run-all-contract-tests.js",
-    "check-contract": "node scripts/check-api-contract.js",
-    "benchmark": "node test/performance/benchmark.ts",
-    "stress-test": "node test/performance/stress-test.ts",
-    "perf": "pnpm run benchmark && pnpm run stress-test",
-    "perf:regression": "node test/performance/regression.ts",
-    "perf:compare": "node test/performance/compare.ts",
     "prepublishOnly": "pnpm run build",
-    "cli": "node src/cli.ts",
     "lint": "oxlint -c oxlint.config.mjs",
     "lint:fix": "oxlint -c oxlint.config.mjs --fix",
     "format": "oxfmt",
@@ -30,6 +18,8 @@
   },
   "keywords": [
     "ksuid",
+    "prefixed-id",
+    "stripe-id",
     "uuid",
     "identifier",
     "sortable",

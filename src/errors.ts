@@ -1,185 +1,24 @@
 /**
- * Error codes for programmatic error handling
+ * Error codes for programmatic error handling.
  */
-export const KSUID_ERROR_CODES = {
-  // Input validation errors
-  INVALID_LENGTH: "INVALID_LENGTH",
-  INVALID_CHARACTER: "INVALID_CHARACTER",
-  INVALID_BUFFER_SIZE: "INVALID_BUFFER_SIZE",
-  INVALID_TIMESTAMP: "INVALID_TIMESTAMP",
-  INVALID_INPUT: "INVALID_INPUT",
-
-  // Data corruption errors
-  MALFORMED_DATA: "MALFORMED_DATA",
-  CORRUPTION_DETECTED: "CORRUPTION_DETECTED",
-
-  // Operation errors
-  SEQUENCE_EXHAUSTED: "SEQUENCE_EXHAUSTED",
-  OPERATION_FAILED: "OPERATION_FAILED",
-} as const;
-
-export type KSUIDErrorCode = (typeof KSUID_ERROR_CODES)[keyof typeof KSUID_ERROR_CODES];
+export type PksuidErrorCode = "INVALID_PREFIX" | "INVALID_ID" | "INVALID_TIMESTAMP";
 
 /**
- * A value rejected by a timestamp guard. Valid timestamps are uint32 numbers;
- * the null/undefined arms exist because `KSUID.fromParts` also guards against
- * the values untyped JavaScript callers can reach it with.
+ * The single error type thrown by pksuid. Prefer switching on `code` rather
+ * than matching the message text, which may change between versions.
  */
-export type RejectedTimestamp = number | null | undefined;
+export class PksuidError extends Error {
+  public readonly code: PksuidErrorCode;
 
-/**
- * A value rejected by a null/undefined guard, retained so the error message can
- * describe what arrived. The library only guards inputs it declares as strings
- * or buffers.
- */
-export type RejectedInput = Buffer | string | null | undefined;
-
-/**
- * Custom error class for KSUID operations
- *
- * Provides structured error information for better error handling
- * and debugging in applications using the KSUID library.
- */
-export class KSUIDError extends Error {
-  public readonly code: KSUIDErrorCode;
-  public readonly input?: unknown;
-  public readonly expected?: string;
-  public readonly actual?: string;
-  public readonly cause?: Error;
-
-  public constructor(
-    message: string,
-    code: KSUIDErrorCode,
-    options: {
-      input?: unknown;
-      expected?: string;
-      actual?: string;
-      cause?: Error;
-    } = {}
-  ) {
+  public constructor(message: string, code: PksuidErrorCode) {
     super(message);
 
-    this.name = "KSUIDError";
+    this.name = "PksuidError";
     this.code = code;
-    this.input = options.input;
-    this.expected = options.expected;
-    this.actual = options.actual;
 
     // Maintain stack trace (V8 only)
     if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, KSUIDError);
-    }
-
-    // Support error chaining (Node.js 16.9.0+)
-    if (options.cause) {
-      this.cause = options.cause;
+      Error.captureStackTrace(this, PksuidError);
     }
   }
-
-  /**
-   * Create an error for invalid string length
-   */
-  public static invalidStringLength(input: string, expected: number): KSUIDError {
-    return new KSUIDError(
-      `Invalid KSUID string: expected ${expected} characters, got ${input.length}`,
-      KSUID_ERROR_CODES.INVALID_LENGTH,
-      {
-        input,
-        expected: `${expected} characters`,
-        actual: `${input.length} characters`,
-      }
-    );
-  }
-
-  /**
-   * Create an error for invalid buffer length
-   */
-  public static invalidBufferLength(buffer: Buffer, expected: number, type = "KSUID"): KSUIDError {
-    return new KSUIDError(
-      `Invalid ${type}: expected ${expected} bytes, got ${buffer.length}`,
-      KSUID_ERROR_CODES.INVALID_BUFFER_SIZE,
-      {
-        input: buffer,
-        expected: `${expected} bytes`,
-        actual: `${buffer.length} bytes`,
-      }
-    );
-  }
-
-  /**
-   * Create an error for invalid character in KSUID string
-   */
-  public static invalidCharacter(char: string, position: number): KSUIDError {
-    const code = char.codePointAt(0) ?? 0;
-    const displayChar = code < 32 || code > 126 ? `\\x${code.toString(16).padStart(2, "0")}` : char;
-
-    return new KSUIDError(
-      `Invalid KSUID string: invalid character '${displayChar}' at position ${position}`,
-      KSUID_ERROR_CODES.INVALID_CHARACTER,
-      {
-        input: char,
-        expected: "valid Base62 character",
-        actual: `character '${displayChar}'`,
-      }
-    );
-  }
-
-  /**
-   * Create an error for invalid timestamp
-   */
-  public static invalidTimestamp(timestamp: RejectedTimestamp): KSUIDError {
-    const displayTimestamp = timestamp == null ? String(timestamp) : timestamp.toString();
-
-    return new KSUIDError(
-      `Invalid timestamp: must be uint32 (0 to 4294967295), got ${displayTimestamp}`,
-      KSUID_ERROR_CODES.INVALID_TIMESTAMP,
-      {
-        input: timestamp,
-        expected: "uint32 (0 to 4294967295)",
-        actual: displayTimestamp,
-      }
-    );
-  }
-
-  /**
-   * Create an error for null/undefined input
-   */
-  public static invalidInput(input: RejectedInput, paramName: string): KSUIDError {
-    return new KSUIDError(`Invalid ${paramName}: cannot be null or undefined`, KSUID_ERROR_CODES.INVALID_INPUT, {
-      input,
-      expected: "non-null value",
-      actual: String(input),
-    });
-  }
-
-  /**
-   * Create an error for malformed compressed data
-   */
-  public static malformedData(context: string): KSUIDError {
-    return new KSUIDError(`Malformed data detected: ${context}`, KSUID_ERROR_CODES.MALFORMED_DATA, {
-      expected: "valid compressed data format",
-      actual: "corrupted or invalid data",
-    });
-  }
 }
-
-/**
- * Type guard to check if an error is a KSUIDError
- */
-// oxlint-disable-next-line anti-slop/no-unknown-parameters -- a type guard over caught values has to accept `unknown`; narrowing it is the function's job
-export function isKSUIDError(error: unknown): error is KSUIDError {
-  return error instanceof KSUIDError;
-}
-
-/**
- * Legacy error factory functions for backward compatibility
- * These will be used internally but the new KSUIDError methods are preferred
- */
-export const createKSUIDError = {
-  invalidStringLength: KSUIDError.invalidStringLength,
-  invalidBufferLength: KSUIDError.invalidBufferLength,
-  invalidCharacter: KSUIDError.invalidCharacter,
-  invalidTimestamp: KSUIDError.invalidTimestamp,
-  invalidInput: KSUIDError.invalidInput,
-  malformedData: KSUIDError.malformedData,
-};
