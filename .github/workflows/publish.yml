@@ -64,7 +64,10 @@ jobs:
           fi
           echo "✓ Build output verification successful"
       # Publish to npm via trusted publishing (OIDC) — no token needed.
-      # --no-git-checks: tag pushes check out a detached HEAD, which pnpm's
-      # branch check would otherwise reject.
+      # npm cli directly, not pnpm publish: pnpm's delegation to npm loses
+      # the OIDC exchange (ENEEDAUTH). npm@latest, since trusted publishing
+      # needs >= 11.5.1.
       - name: Publish package to npm
-        run: pnpm publish --access public --no-git-checks
+        run: |
+          npm install -g npm@latest
+          npm publish --access public
