@@ -1,6 +1,6 @@
 {
   "name": "pksuid",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Prefixed, k-sortable, strictly-typed ids in the style of Stripe object ids",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
