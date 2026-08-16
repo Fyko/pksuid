@@ -1,7 +1,7 @@
 {
-  "name": "@owpz/ksuid",
-  "version": "25.7.20",
-  "description": "TypeScript implementation of KSUID with full feature parity to the Go version",
+  "name": "@fyko/pksuid",
+  "version": "0.1.20",
+  "description": "KSUIDs with prefixes like Stripe",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
@@ -36,7 +36,7 @@
     "timestamp",
     "unique"
   ],
-  "author": "Apex Innovations, Inc.",
+  "author": "Carter Himmel",
   "license": "MIT",
   "type": "module",
   "files": [
@@ -63,5 +63,5 @@
   "publishConfig": {
     "access": "public"
   },
-  "homepage": "https://github.com/owpz/ksuid"
+  "homepage": "https://github.com/fyko/ksuid"
 }

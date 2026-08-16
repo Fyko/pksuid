@@ -25,7 +25,7 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Check Prettier formatting
+      - name: Check formatting
         run: pnpm run format:check
 
       - name: Format check results
@@ -33,7 +33,7 @@ jobs:
         run: |
           echo "## ❌ Code Formatting Issues Found" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "The code is not properly formatted according to Prettier rules." >> $GITHUB_STEP_SUMMARY
+          echo "The code is not properly formatted according to oxfmt rules." >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### How to fix:" >> $GITHUB_STEP_SUMMARY
           echo "Run the following command locally:" >> $GITHUB_STEP_SUMMARY
