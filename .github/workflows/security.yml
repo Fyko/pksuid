@@ -31,9 +31,6 @@ jobs:
       - name: Run pnpm audit
         run: pnpm audit --audit-level=moderate
 
-      - name: Run pnpm audit fix (dry run)
-        run: pnpm audit fix --dry-run
-
   codeql:
     name: CodeQL Analysis
     runs-on: ubuntu-latest
