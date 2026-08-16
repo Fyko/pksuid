@@ -49,10 +49,10 @@
   "publishConfig": {
     "access": "public"
   },
-  "homepage": "https://github.com/fyko/pksuid",
+  "homepage": "https://github.com/Fyko/pksuid",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/fyko/pksuid.git"
+    "url": "git+https://github.com/Fyko/pksuid.git"
   },
   "exports": {
     ".": {
