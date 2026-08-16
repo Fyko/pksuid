@@ -38,9 +38,6 @@
     "node": ">=24.0.0"
   },
   "packageManager": "pnpm@10.33.0",
-  "dependencies": {
-    "base-x": "^5.0.1"
-  },
   "devDependencies": {
     "@oxlint/plugins": "1.78.0",
     "@types/node": "^26.2.0",
@@ -54,5 +51,9 @@
   "publishConfig": {
     "access": "public"
   },
-  "homepage": "https://github.com/fyko/ksuid"
+  "homepage": "https://github.com/fyko/pksuid",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fyko/pksuid.git"
+  }
 }
